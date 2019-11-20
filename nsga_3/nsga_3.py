@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.special import binom
 
 
 class Solution:
@@ -229,6 +231,7 @@ if __name__ == '__main__':
     Perform nondominated sort
     '''
     fronts = fast_non_dominated_sort(initial_population)
+    nondom = fronts[0]
     visualize_ranks(initial_population, '2_ranked.png')
 
     '''
@@ -266,139 +269,50 @@ if __name__ == '__main__':
     Generate reference points
     '''
     dimensions = 2
-    r = get_reference_coords(4, dimensions)
+    divisions = 4
+    reference_points = get_reference_coords(divisions, dimensions)
 
-    print(r)
-    print(np.sum(r, axis=0))
-    print(np.sum(r, axis=1))
+    '''
+    Visualize the reference points
+    '''
+    if dimensions == 2:
+        fig = plt.figure()
+        plt.scatter(reference_points[:,0], reference_points[:,1])
+        plt.savefig('3_references.png')
+    elif dimensions == 3:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.view_init(elev=10., azim=30)
+        ax.scatter(reference_points[:,0], reference_points[:,1], reference_points[:,2])
+        plt.savefig('3_references.png')
 
+    '''
+    Normalize candidate scores
+    '''
+    candidate_scores = np.array([s.value for s in candidates])
+    nondom_scores = np.array([s.value for s in nondom])
 
+    normalized_candidate_scores = normalize(candidate_scores, nondom_scores)
 
+    '''
+    Visualize normalized candidate scores with reference points
+    '''
+    if dimensions == 2:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_xlim(-0.1,1.1)
+        ax.set_ylim(-0.1,1.1)
+        ax.scatter(normalized_candidate_scores[:,0],normalized_candidate_scores[:,1])
 
+        for r in reference_points:
+            x, y = r
+            if x > y:
+                ax.plot((0,1), (0,y/x), 'r-')
+            elif y > x:
+                ax.plot((0,x/y), (0,1), 'r-')
+            else:
+                ax.plot((0,1), (0,1), 'r-')
 
-"""
-# In[11]:
-
-
-normalized_pop = normalize(np.array([s.value for s in initial_population]),
-          np.array([s.value for s in nondom[0]]))
-plt.scatter(normalized_pop[:,0], normalized_pop[:,1])
-plt.show()
-
-
-# In[12]:
-
-
-reference_points = get_reference_points(4)
-print(reference_points)
-for i, r in enumerate(reference_points):
-    if i%3 == 0:
-        c='r'
-    elif i%3 == 1:
-        c='g'
-    else:
-        c='b'
-    plt.plot([ 0, r[0]], [0, r[1]], c)
-visualize(initial_population)
-plt.show()
-
-
-# In[13]:
-
-
-p = np.array([2,1])
-v = np.array([1,1])
-v = v/np.sqrt(sum(v**2))
-print(p.dot(v))
-
-
-# In[36]:
+        plt.savefig('4_normalized.png')
 
 
-        
-    
-initial_coords = np.array([s.value for s in initial_population])
-assoc, ref_count = associate(reference_points, initial_coords)
-
-
-# In[37]:
-
-
-assoc, ref_count
-
-
-# In[25]:
-
-
-for 
-
-
-# In[33]:
-
-
-for i, r in enumerate(reference_points):
-    if i%3 == 0:
-        c='r'
-    elif i%3 == 1:
-        c='g'
-    else:
-        c='b'
-    plt.plot([ 0, r[0]], [0, r[1]], c)
-    
-for i in range(assoc.shape[0]):
-    if assoc[i,0]%3 == 0:
-        c='r'
-    elif assoc[i,0]%3 == 1:
-        c='g'
-    else:
-        c='b'
-    plt.scatter(initial_coords[i,0], initial_coords[i,1], c=c)
-    
-plt.show()
-
-
-# In[88]:
-
-
-def niche(ref_count, assoc, K):
-    out = []
-    
-    
-    k = 1
-    while k <= K:
-        J = np.argwhere(ref_count==np.min(ref_count)).T[0]
-        
-        j = np.random.choice(J)
-        I = np.argwhere(assoc[:,0]==j).T[0]
-        if I.shape[0] != 0:
-            out.append(np.random.choice(I))
-        
-        k+=1
-    return out
-
-niche(ref_count, assoc, 1)
-
-
-# In[63]:
-
-
-a = np.argwhere(ref_count[1:]==np.min(ref_count[1:])).T[0]
-
-
-# In[76]:
-
-
-np.random.choice(a)
-
-
-# In[79]:
-
-
-
-
-
-# In[ ]:
-
-
-
-"""
