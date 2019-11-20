@@ -74,16 +74,33 @@ def dominates(p,q):
         return 0
 
 
-def get_reference_points(divisions):
+def get_reference_coords(div, dim):
     '''
-    Generates a list of points that divide each
+    Generates a list of coordinates that divide each
     goal axis by specified number of divisions.
     TODO: Extend to more then two axes.
     '''
-    coords = np.zeros((divisions+1,))
-    coords[:divisions] = np.arange(0,1,1/divisions)
-    coords[divisions] = 1
-    return np.array([[x,y] for x,y in zip(coords,reversed(coords))])
+
+    start_vector = np.ones((div+1,))
+    start_vector[:div] = np.arange(0,1,1/div)
+    coords = np.array([(i,j) for i,j in zip(start_vector, reversed(start_vector))])
+
+    for i in range(3,dim+1):
+        coords_update = np.zeros((int(binom(i + div - 1, div)),i))
+        reduction_vector = np.zeros((coords.shape[1],))
+        reduction_vector[-1] = 1
+        offset = 0
+        for j in range(div + 1):
+            reduced_coords = coords - reduction_vector * j * 1/div
+            erase = np.argwhere(reduced_coords < -0.0000001)[:,0]
+            reduced_coords = np.delete(reduced_coords, erase, axis=0)
+            h, w = reduced_coords.shape
+            coords_update[offset:offset+h,:i-1] = reduced_coords
+            coords_update[offset:offset+h,i-1] = j*1/div
+            offset += h
+        coords = coords_update
+
+    return coords
 
 
 def normalize(candidate_scores, nondom_scores):
@@ -91,7 +108,6 @@ def normalize(candidate_scores, nondom_scores):
     Normalizes scores if candidate solutions according
     to NSGA-III specification.
     '''
-    ideal_point = np.min(candidate_scores, axis=0)
 
     '''
     This fragment is almost entirely copied from
@@ -102,6 +118,8 @@ def normalize(candidate_scores, nondom_scores):
     among nondominated solutions. Resulting points are saved as
     'maximum' points.
     '''
+
+    ideal_point = np.min(candidate_scores, axis=0)
     weights = np.eye(candidate_scores.shape[1])
     weights[weights==0] = 1e6
 
@@ -173,12 +191,37 @@ if __name__ == '__main__':
     '''
     Prepare initial population
     '''
-    popsize = 10
-    values = np.random.random_sample((popsize,2))
+    popsize = 20
+
+    '''
+    Give some concrete values to solutions for testing
+    purpouses
+    '''
+    #values = np.random.random_sample((popsize,2))
+    initial_coords = np.array([[0.47211927, 0.98787129],
+                       [0.94094343, 0.7684067 ],
+                       [0.70284234, 0.91674066],
+                       [0.21146251, 0.60112486],
+                       [0.04835416, 0.89512353],
+                       [0.31512954, 0.48553947],
+                       [0.52879547, 0.27766949],
+                       [0.96938697, 0.750783  ],
+                       [0.12147045, 0.38973397],
+                       [0.20875761, 0.6897253 ],
+                       [0.60568495, 0.24796033],
+                       [0.15599147, 0.95841993],
+                       [0.26278643, 0.1886119 ],
+                       [0.97070001, 0.36794984],
+                       [0.91044592, 0.71886261],
+                       [0.52536064, 0.58637707],
+                       [0.58728183, 0.99748163],
+                       [0.13788234, 0.23183102],
+                       [0.86295771, 0.84656466],
+                       [0.05840085, 0.45842131]])
 
     initial_population = []
-    for v in values:
-        initial_population.append(Solution(v))
+    for c in initial_coords:
+        initial_population.append(Solution(c))
 
     visualize_ranks(initial_population, '1_initial.png')
 
@@ -187,6 +230,51 @@ if __name__ == '__main__':
     '''
     fronts = fast_non_dominated_sort(initial_population)
     visualize_ranks(initial_population, '2_ranked.png')
+
+    '''
+    Make a set of candidates that will compete for the
+    next generation
+    '''
+    candidates = []
+    cutoff_number = popsize // 2
+    candidates_number = 0
+
+    for f in fronts:
+        if candidates_number + len(f) < cutoff_number:
+            candidates = candidates + f
+            candidates_number += len(f)
+        elif candidates_number + len(f) == cutoff_number:
+            '''
+            TODO: implement this when genetic loop is developed
+            '''
+            print('No need to perform selection!')
+        else:
+            points_to_choose_number = cutoff_number - len(candidates)
+            candidates = candidates + f
+            candidates_number += len(f)
+            last_front = f
+            break
+    '''
+    'candidates_number' - the amount of solutions that compete for
+    next generation
+    'candidates' - these solutions len(candidates) = candidates_number
+    'last_front' - the front that should be pruned
+    '''
+
+
+    '''
+    Generate reference points
+    '''
+    dimensions = 2
+    r = get_reference_coords(4, dimensions)
+
+    print(r)
+    print(np.sum(r, axis=0))
+    print(np.sum(r, axis=1))
+
+
+
+
 
 """
 # In[11]:
