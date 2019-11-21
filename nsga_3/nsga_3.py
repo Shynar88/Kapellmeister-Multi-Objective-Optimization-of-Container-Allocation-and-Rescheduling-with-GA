@@ -32,16 +32,16 @@ def fast_non_dominated_sort(population):
     to 'dominates' field. Assign a number of solutions that
     dominate it to 'dominated_cardinal' field.
     '''
-    for p in population:
-        for q in population:
+    for i, p in enumerate(population):
+        for j, q in enumerate(population):
             domination = dominates(p,q)
             if domination == 1:
-                p.dominates.append(q)
+                p.dominates.append(j)
             elif domination == -1:
                 p.dominated_cardinal += 1
         if p.dominated_cardinal == 0:
             p.rank = 1
-            fronts[0].append(p)
+            fronts[0].append(i)
 
     '''
     Peel fronts one by one, from nondominated to
@@ -50,12 +50,14 @@ def fast_non_dominated_sort(population):
     i = 0
     while len(fronts[i]) != 0:
         next_front = []
-        for p in fronts[i]:
-            for q in p.dominates:
+        for pi in fronts[i]:
+            p = population[pi]
+            for qi in p.dominates:
+                q = population[qi]
                 q.dominated_cardinal -= 1
                 if q.dominated_cardinal == 0:
                     q.rank = i + 2
-                    next_front.append(q)
+                    next_front.append(qi)
         i += 1
         fronts.append(next_front)
 
@@ -139,9 +141,9 @@ def normalize(candidate_scores, nondom_scores):
     plane = np.linalg.solve(points, b)
     intercepts = 1/plane
 
-    return (candidate_scores - ideal_point)/intercepts
+    return (candidate_scores - ideal_point)/intercepts, ideal_point, intercepts
 
-def associate(reference_points, normalized_candidate_scores):
+def associate(reference_points, normalized_candidate_scores, passing_number):
     '''
     Associates each candidate with a closest line generated
     by a reference point.
@@ -171,29 +173,49 @@ def associate(reference_points, normalized_candidate_scores):
     assoc_table[:,0] = np.argmin(dist_matrix, axis=1)
     assoc_table[:,1] = np.min(dist_matrix, axis=1)
 
-    for a in assoc_table:
-        ref_count[np.int(a[0])] += 1
+    for i in range(passing_number):
+        ref_count[np.int(assoc_table[i,0])] += 1
 
     return assoc_table, ref_count
 
-def niche(ref_count, assoc, K):
+def niche(ref_count,
+          assoc_table,
+          points_to_choose_number,
+          candidates,
+          passing_number):
     '''
 
     '''
-    out = []
-
+    last_front_assoc_table = assoc_table[passing_number:,:]
+    new_population = candidates[:passing_number]
+    enum_assoc_table = np.zeros((len(assoc_table), 3))
+    enum_assoc_table[:,1:] = assoc_table
+    enum_assoc_table[:,0] = np.arange(0,len(assoc_table))
+    print("enum_assoc", enum_assoc_table)
+    print("new_pop", new_population)
 
     k = 1
-    while k <= K:
-        J = np.argwhere(ref_count==np.min(ref_count)).T[0]
+    while k <= points_to_choose_number:
+        best_ref_points = np.argwhere(ref_count==np.min(ref_count)).T[0]
 
-        j = np.random.choice(J)
-        I = np.argwhere(assoc[:,0]==j).T[0]
-        if I.shape[0] != 0:
-            out.append(np.random.choice(I))
+        best_ref_point = np.random.choice(best_ref_points)
+        print("best_ref_point", best_ref_point)
+        last_front_best = np.argwhere(last_front_assoc_table[:,0]==best_ref_point).T[0] + passing_number
+        print("last_best", last_front_best)
+        if last_front_best.shape[0] != 0:
+            if ref_count[best_ref_point] == 0:
+                last_front_bestest_index = np.argmin(enum_assoc_table[last_front_best,2])
+                print("last_front_bestest_index", last_front_bestest_index)
+                last_front_bestest = enum_assoc_table[last_front_best,:][last_front_bestest_index,0]
+                new_population += [candidates[int(last_front_bestest)]]
+            else:
+                new_population += [candidates[np.random.choice(last_front_best)]]
+            ref_count[best_ref_point] += 1
+            k+=1
+        else:
+            ref_count[best_ref_point] = 1e9
 
-        k+=1
-    return out
+    return new_population
 
 
 def visualize_ranks(population, figname):
@@ -219,7 +241,8 @@ if __name__ == '__main__':
     Give some concrete values to solutions for testing
     purpouses
     '''
-    #values = np.random.random_sample((popsize,2))
+    #initial_coords = np.random.random_sample((popsize,2))
+
     initial_coords = np.array([[0.47211927, 0.98787129],
                        [0.94094343, 0.7684067 ],
                        [0.70284234, 0.91674066],
@@ -245,13 +268,16 @@ if __name__ == '__main__':
     for c in initial_coords:
         initial_population.append(Solution(c))
 
+    initial_population = np.array(initial_population)
+
     visualize_ranks(initial_population, '1_initial.png')
 
     '''
     Perform nondominated sort
     '''
     fronts = fast_non_dominated_sort(initial_population)
-    nondom = fronts[0]
+    print(fronts)
+    nondom = initial_population[fronts[0]]
     visualize_ranks(initial_population, '2_ranked.png')
 
     '''
@@ -272,7 +298,8 @@ if __name__ == '__main__':
             '''
             print('No need to perform selection!')
         else:
-            points_to_choose_number = cutoff_number - len(candidates)
+            passing_number = len(candidates)
+            points_to_choose_number = cutoff_number - passing_number
             candidates = candidates + f
             candidates_number += len(f)
             last_front = f
@@ -281,7 +308,6 @@ if __name__ == '__main__':
     'candidates_number' - the amount of solutions that compete for
     next generation
     'candidates' - these solutions len(candidates) = candidates_number
-    'last_front' - the front that should be pruned
     '''
 
 
@@ -309,10 +335,10 @@ if __name__ == '__main__':
     '''
     Normalize candidate scores
     '''
-    candidate_scores = np.array([s.value for s in candidates])
+    candidate_scores = np.array([s.value for s in initial_population[candidates]])
     nondom_scores = np.array([s.value for s in nondom])
 
-    normalized_candidate_scores = normalize(candidate_scores, nondom_scores)
+    normalized_candidate_scores,ideal_point,intercepts = normalize(candidate_scores, nondom_scores)
 
     '''
     Visualize normalized candidate scores with reference points
@@ -339,7 +365,9 @@ if __name__ == '__main__':
     For each candidate point find out its nearest reference line and
     distance to it
     '''
-    assoc_table, ref_count = associate(reference_points, normalized_candidate_scores)
+    assoc_table, ref_count = associate(reference_points,
+                                       normalized_candidate_scores,
+                                       passing_number)
 
     '''
     Visualize the result
@@ -377,6 +405,55 @@ if __name__ == '__main__':
     '''
     Niching: delete extra points
     '''
+    new_population = niche(ref_count,
+                           assoc_table,
+                           points_to_choose_number,
+                           candidates,
+                           passing_number)
+    print(candidates, new_population)
 
+    '''
+    Visualize the result
+    '''
 
+    new_pop_a = np.array(new_population)
+    candidates_a = np.array(candidates)
+    last_front_a = np.array(last_front)
+
+    passed_last_front_a = new_pop_a[passing_number:]
+    rejected_last_front_a = np.copy(last_front_a)
+    default_pass_a = new_pop_a[:passing_number]
+
+    normalized_initial_coords = (initial_coords - ideal_point) / intercepts
+
+    for l in passed_last_front_a:
+        rejected_last_front_a = rejected_last_front_a[rejected_last_front_a!=l]
+    print(passed_last_front_a)
+
+    if dimensions == 2:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_xlim(-0.1,1.1)
+        ax.set_ylim(-0.1,1.1)
+        for i, s in enumerate(normalized_initial_coords[passed_last_front_a]):
+            ax.scatter(s[0], s[1], c='r', marker='*')
+        for i, s in enumerate(normalized_initial_coords[rejected_last_front_a]):
+            ax.scatter(s[0], s[1], c='r', marker='x')
+        for i, s in enumerate(normalized_initial_coords[default_pass_a]):
+            ax.scatter(s[0], s[1], c='b', marker='.')
+        for i, r in enumerate(reference_points):
+            if i%3 == 0:
+                c = 'r--'
+            elif i%3 == 1:
+                c = 'g--'
+            else:
+                c = 'b--'
+            x, y = r
+            if x > y:
+                ax.plot((0,1), (0,y/x), c)
+            elif y > x:
+                ax.plot((0,x/y), (0,1), c)
+            else:
+                ax.plot((0,1), (0,1), c)
+        plt.savefig('6_niched.png')
 
