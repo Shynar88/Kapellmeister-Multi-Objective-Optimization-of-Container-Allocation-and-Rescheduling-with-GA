@@ -125,13 +125,13 @@ class GeneticAlgorithm():
         #TODO mutation type 1
         change_index = random.randint(0, len(chromosome.nodes))
         while True:
-            new_node = random.choice(self.nodes)
-            if chromosome.nodes[change_index].id == new_node.id:
+            new_node = random.choose(self.nodes).id
+            if chromosome.nodes[change_index].id == :
                 continue
             else: 
-                chromosome.nodes[change_index] = new_node
-                break
-        return chromosome
+
+
+        return
 
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2

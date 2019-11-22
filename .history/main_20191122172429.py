@@ -7,8 +7,7 @@ import copy
 
 class Node():
     # {}_specified means initial capacity of the resource
-    def __init__(self, remaining_cpu, remaining_memory, cpu_specified, memory_specified, id):
-        self.id = id
+    def __init__(self, remaining_cpu, remaining_memory, cpu_specified, memory_specified):
         self.remaining_cpu = remaining_cpu
         self.remaining_memory = remaining_memory
         self.cpu_specified = cpu_specified
@@ -57,8 +56,8 @@ class GeneticAlgorithm():
         nodes_list = []
         cpu_specified = 6  #TODO make configs diverse 
         memory_specified = 1000
-        for i in range(self.nodes_num):
-            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified, i)
+        for _ in range(self.nodes_num):
+            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified)
             nodes_list.append(node)
         return nodes_list
     
@@ -90,7 +89,7 @@ class GeneticAlgorithm():
 
     def crossover(self, p1, p2):  #p1 and p2 are of type Chromosome
         #TODO crossover
-        crossover_point = random.randint(1, len(p1.containers))
+        crossover_point = random.randint(0, len(p1.containers) - 1)
         rand_int = random.randint(0, 1)
         if rand_int == 1:
             child_nodes = (p1.nodes[:crossover_point] +  #here could be problem with synchronization, as node should be passed by reference and not by instance
@@ -102,7 +101,6 @@ class GeneticAlgorithm():
 
     def mutate(self, chromosome, mutation_type):  
         #TODO mutation
-        #TODO need to hande resources!!!!
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
@@ -123,15 +121,7 @@ class GeneticAlgorithm():
     
     def change_mutation(self, chromosome):
         #TODO mutation type 1
-        change_index = random.randint(0, len(chromosome.nodes))
-        while True:
-            new_node = random.choice(self.nodes)
-            if chromosome.nodes[change_index].id == new_node.id:
-                continue
-            else: 
-                chromosome.nodes[change_index] = new_node
-                break
-        return chromosome
+        return
 
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2

@@ -57,8 +57,8 @@ class GeneticAlgorithm():
         nodes_list = []
         cpu_specified = 6  #TODO make configs diverse 
         memory_specified = 1000
-        for i in range(self.nodes_num):
-            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified, i)
+        for _ in range(self.nodes_num):
+            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified)
             nodes_list.append(node)
         return nodes_list
     
@@ -102,7 +102,6 @@ class GeneticAlgorithm():
 
     def mutate(self, chromosome, mutation_type):  
         #TODO mutation
-        #TODO need to hande resources!!!!
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
@@ -124,14 +123,9 @@ class GeneticAlgorithm():
     def change_mutation(self, chromosome):
         #TODO mutation type 1
         change_index = random.randint(0, len(chromosome.nodes))
-        while True:
-            new_node = random.choice(self.nodes)
-            if chromosome.nodes[change_index].id == new_node.id:
-                continue
-            else: 
-                chromosome.nodes[change_index] = new_node
-                break
-        return chromosome
+        while chromosome.nodes[change_index] == random.choose
+
+        return
 
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2

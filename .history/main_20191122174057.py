@@ -125,7 +125,7 @@ class GeneticAlgorithm():
         #TODO mutation type 1
         change_index = random.randint(0, len(chromosome.nodes))
         while True:
-            new_node = random.choice(self.nodes)
+            new_node = random.choose(self.nodes)
             if chromosome.nodes[change_index].id == new_node.id:
                 continue
             else: 
