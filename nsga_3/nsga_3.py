@@ -191,21 +191,16 @@ def niche(ref_count,
     enum_assoc_table = np.zeros((len(assoc_table), 3))
     enum_assoc_table[:,1:] = assoc_table
     enum_assoc_table[:,0] = np.arange(0,len(assoc_table))
-    print("enum_assoc", enum_assoc_table)
-    print("new_pop", new_population)
 
     k = 1
     while k <= points_to_choose_number:
         best_ref_points = np.argwhere(ref_count==np.min(ref_count)).T[0]
 
         best_ref_point = np.random.choice(best_ref_points)
-        print("best_ref_point", best_ref_point)
         last_front_best = np.argwhere(last_front_assoc_table[:,0]==best_ref_point).T[0] + passing_number
-        print("last_best", last_front_best)
         if last_front_best.shape[0] != 0:
             if ref_count[best_ref_point] == 0:
                 last_front_bestest_index = np.argmin(enum_assoc_table[last_front_best,2])
-                print("last_front_bestest_index", last_front_bestest_index)
                 last_front_bestest = enum_assoc_table[last_front_best,:][last_front_bestest_index,0]
                 new_population += [candidates[int(last_front_bestest)]]
             else:
@@ -235,14 +230,15 @@ if __name__ == '__main__':
     '''
     Prepare initial population
     '''
-    popsize = 20
+    popsize = 500
 
     '''
     Give some concrete values to solutions for testing
     purpouses
     '''
-    #initial_coords = np.random.random_sample((popsize,2))
+    initial_coords = np.random.random_sample((popsize,2))
 
+    '''
     initial_coords = np.array([[0.47211927, 0.98787129],
                        [0.94094343, 0.7684067 ],
                        [0.70284234, 0.91674066],
@@ -263,6 +259,7 @@ if __name__ == '__main__':
                        [0.13788234, 0.23183102],
                        [0.86295771, 0.84656466],
                        [0.05840085, 0.45842131]])
+    '''
 
     initial_population = []
     for c in initial_coords:
@@ -276,7 +273,6 @@ if __name__ == '__main__':
     Perform nondominated sort
     '''
     fronts = fast_non_dominated_sort(initial_population)
-    print(fronts)
     nondom = initial_population[fronts[0]]
     visualize_ranks(initial_population, '2_ranked.png')
 
@@ -410,7 +406,6 @@ if __name__ == '__main__':
                            points_to_choose_number,
                            candidates,
                            passing_number)
-    print(candidates, new_population)
 
     '''
     Visualize the result
@@ -428,7 +423,6 @@ if __name__ == '__main__':
 
     for l in passed_last_front_a:
         rejected_last_front_a = rejected_last_front_a[rejected_last_front_a!=l]
-    print(passed_last_front_a)
 
     if dimensions == 2:
         fig = plt.figure()
