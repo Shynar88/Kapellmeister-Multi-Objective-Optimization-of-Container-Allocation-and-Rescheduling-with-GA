@@ -97,7 +97,7 @@ class GeneticAlgorithm():
         else:
             child_nodes = (p2.nodes[crossover_point:] +
                      p1.nodes[:crossover_point])
-        return Chromosome(child_nodes, copy.deepcopy(p1.containers)) #is copy really necessary here?
+        return Chromosome(child_nodes, copy.deepcopy(p1.containers))
 
     def mutate(self, chromosome, mutation_type):  
         #TODO mutation

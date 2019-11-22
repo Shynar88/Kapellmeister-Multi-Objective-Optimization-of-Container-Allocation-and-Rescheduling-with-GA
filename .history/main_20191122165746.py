@@ -92,12 +92,12 @@ class GeneticAlgorithm():
         crossover_point = random.randint(0, len(p1.containers) - 1)
         rand_int = random.randint(0, 1)
         if rand_int == 1:
-            child_nodes = (p1.nodes[:crossover_point] +  #here could be problem with synchronization, as node should be passed by reference nad not by instance
-                     p2.nodes[crossover_point:])
+            child = (self._value[:crossover_point] +
+                     other._value[crossover_point:])
         else:
-            child_nodes = (p2.nodes[crossover_point:] +
-                     p1.nodes[:crossover_point])
-        return Chromosome(child_nodes, copy.deepcopy(p1.containers)) #is copy really necessary here?
+            child = (self._value[crossover_point:] +
+                     other._value[:crossover_point])
+        return child
 
     def mutate(self, chromosome, mutation_type):  
         #TODO mutation
