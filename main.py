@@ -278,14 +278,11 @@ class GeneticAlgorithm():
 
     def generate_solution(self): 
         #TODO NSGA III
-        print('creating initial population...')
         population = self.create_initial_population()
         number_of_objectives = 5
         divisions = 6
         for i in range(self.max_generations):
-            print('generating new populaton...')
             new_population = self.generate_new_population(population)
-            return 0
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             selected_indices = nsga3_dummy(combined_population_coords, divisions)
