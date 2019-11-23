@@ -4,7 +4,6 @@ import random
 import operator
 import sys
 import copy
-import numpy as np
 
 class Node():
     # {}_specified means initial capacity of the resource
@@ -194,32 +193,13 @@ class GeneticAlgorithm():
         #TODO selection
         return
 
-    def generate_new_population(self, old_population):
-        mating_pool = self.selection(old_population)
-        new_population = []
-        for i in range(len(old_population)):
-            p1, p2 = np.random.choice(mating_pool, 2)
-            new_solution = self.crossover(p1, p2)
-            new_solution = mutate(new_solution)
-            new_population.append(new_solution)
-        return new_population
-
-
     def generate_solution(self): 
         #TODO NSGA III
-        population = np.array(self.create_initial_population())
-        number_of_objectives = 5
-        divisions = 6
-        for i in range(self.max_generation):
-            population_coords = np.array([p.fitness for p in population])
-
+        population = self.create_initial_population()
+        best_pareto_front = None
+        for generation in range(self.max_generations):
+            break
         return best_pareto_front
-
-def nsga3_dummy(population_coords, divisions):
-    pop_length = population_coords.shape[0]
-    selected_indices = np.arange(0, pop_length)
-    return selected_indices
-
 
 # parses command line arguments
 def parse_arguments():
