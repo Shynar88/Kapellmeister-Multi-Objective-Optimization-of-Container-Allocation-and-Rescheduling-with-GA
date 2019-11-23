@@ -15,18 +15,15 @@ class Node():
         self.memory_specified = memory_specified
         self.containers_list = []
 
-    def assign_container(self, container):
-        self.remaining_cpu -= container.required_cpu
-        self.remaining_memory -= container.required_memory
-
-    def unassign_container(self, container):
-        self.remaining_cpu += container.required_cpu
-        self.remaining_memory += container.required_memory
-
 class Container():
     def __init__(self, required_cpu, required_memory):
         self.required_cpu = required_cpu
         self.required_memory = required_memory #size in MB
+
+# class Gene():
+#     def __init__(self, node, container):
+#         self.node = node
+#         self.container = container
 
 class Chromosome():
     def __init__(self, nodes, containers):
@@ -57,7 +54,6 @@ class GeneticAlgorithm():
         self.containers = self.create_containers()
 
     def create_nodes(self):
-        # in Table 6 there are different settings on number of nodes and their specifications
         nodes_list = []
         cpu_specified = 4  #according to paper
         memory_specified = 4000 #according to paper
@@ -67,7 +63,6 @@ class GeneticAlgorithm():
         return nodes_list
     
     def create_containers(self):
-        # in Table 6 there are different settings on number of containers and their specifications
         containers_list = []
         cpu_required = 2
         memory_required = 200
@@ -82,7 +77,7 @@ class GeneticAlgorithm():
         containers = copy.deepcopy(self.containers) 
         nodes = []
         for _ in range(self.containers_num):
-            if random.random() < 0.9: #with 90% probability assign conainer to node, not specified in paper
+            if random.random() < 0.9: #with 90% probability assign conainer to node
                 nodes.append(random.choice(self.nodes))
             else:
                 nodes.append(None)
@@ -176,13 +171,13 @@ class GeneticAlgorithm():
 # parses command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', type=int, default=300, help="population size") #212
+    parser.add_argument('-s', type=int, default=300, help="population size")
     parser.add_argument('-ms', type=int, default=150, help="mating pool size")
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
     parser.add_argument('-e', type=int, default=30, help="elite_size")
-    parser.add_argument('-mg', type=int, default=50, help="max generations") #1000
-    parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
-    parser.add_argument('-nn', type=int, default=5, help="nodes number") 
+    parser.add_argument('-mg', type=int, default=50, help="max generations")
+    parser.add_argument('-mr', type=float, default=0.3, help="mutation rate")
+    parser.add_argument('-nn', type=int, default=5, help="nodes number")
     parser.add_argument('-cn', type=int, default=8, help="containers number")
     args = parser.parse_args()
     return args.s, args.ms, args.ts, args.e, args.mg, args.mr, args.nn, args.cn

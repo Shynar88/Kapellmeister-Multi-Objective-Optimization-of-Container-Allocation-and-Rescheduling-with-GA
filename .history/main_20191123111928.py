@@ -15,14 +15,6 @@ class Node():
         self.memory_specified = memory_specified
         self.containers_list = []
 
-    def assign_container(self, container):
-        self.remaining_cpu -= container.required_cpu
-        self.remaining_memory -= container.required_memory
-
-    def unassign_container(self, container):
-        self.remaining_cpu += container.required_cpu
-        self.remaining_memory += container.required_memory
-
 class Container():
     def __init__(self, required_cpu, required_memory):
         self.required_cpu = required_cpu
