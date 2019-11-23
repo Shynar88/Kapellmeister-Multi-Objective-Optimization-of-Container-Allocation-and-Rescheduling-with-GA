@@ -192,27 +192,35 @@ class GeneticAlgorithm():
 
     def selection(self, population): #-> mating pool of size population/2
         #TODO selection
-        return
+        return population[0:len(population)//2]
 
     def generate_new_population(self, old_population):
-        mating_pool = self.selection(old_population)
+        mating_pool = np.array(self.selection(old_population))
         new_population = []
         for i in range(len(old_population)):
             p1, p2 = np.random.choice(mating_pool, 2)
             new_solution = self.crossover(p1, p2)
-            new_solution = mutate(new_solution)
+            new_solution = self.mutate(new_solution)
             new_population.append(new_solution)
         return new_population
 
 
     def generate_solution(self): 
         #TODO NSGA III
-        population = np.array(self.create_initial_population())
+        print('creating initial population...')
+        population = self.create_initial_population()
         number_of_objectives = 5
         divisions = 6
-        for i in range(self.max_generation):
-            population_coords = np.array([p.fitness for p in population])
+        for i in range(self.max_generations):
+            print('generating new populaton...')
+            new_population = self.generate_new_population(population)
+            return 0
+            combined_population = population + new_population
+            combined_population_coords = np.array([p.fitness for p in combined_population])
+            selected_indices = nsga3_dummy(combined_population_coords, divisions)
+            population, best_front_indices = combined_population[selected_indices]
 
+        best_pareto_front = combined_population[best_front_indices]
         return best_pareto_front
 
 def nsga3_dummy(population_coords, divisions):
