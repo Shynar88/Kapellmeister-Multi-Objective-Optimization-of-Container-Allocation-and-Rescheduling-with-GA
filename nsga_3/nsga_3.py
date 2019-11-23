@@ -4,21 +4,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.special import binom
 
 
-class Solution:
+def fast_non_dominated_sort(population_coords):
     '''
-    One instance of a problem solution
-    '''
-    def __init__(self, value):
-        self.value = value
-        self.dominates = []
-        self.dominated_cardinal = 0
-        self.rank = None
+    Accepts a list of coordinates of solutions in score space,
+    for each solution instance:
 
-
-def fast_non_dominated_sort(population):
-    '''
-    Accepts a list of Solutions, for each solution instance
-    modifies its rank according to the sorting result.
+    Returns its rank according to the sorting result.
 
     Returns list of fronts, each of which is a list of
     solutions. fronts[0] is the nondominated front.
@@ -27,20 +18,26 @@ def fast_non_dominated_sort(population):
     fronts = []
     fronts.append([])
 
+    popsize = population_coords.shape[0]
+    ranks = np.zeros((popsize,))
+    domination_table = np.zeros((popsize, popsize), dtype='bool')
+    dominated_cardinal = np.zeros((popsize,))
+
     '''
-    For each solution, assign a list of solutions it dominates
-    to 'dominates' field. Assign a number of solutions that
-    dominate it to 'dominated_cardinal' field.
+    For each solution, modify 'domination_table' where
+    True at row i column j means that solution i dominates j.
+    Assign a number of solutions that dominate solution i
+    to 'dominated_cardinal[i]' field.
     '''
-    for i, p in enumerate(population):
-        for j, q in enumerate(population):
+    for i, p in enumerate(population_coords):
+        for j, q in enumerate(population_coords):
             domination = dominates(p,q)
             if domination == 1:
-                p.dominates.append(j)
+                domination_table[i, j] = True
             elif domination == -1:
-                p.dominated_cardinal += 1
-        if p.dominated_cardinal == 0:
-            p.rank = 1
+                dominated_cardinal[i] += 1
+        if dominated_cardinal[i] == 0:
+            ranks[i] = 1
             fronts[0].append(i)
 
     '''
@@ -51,18 +48,17 @@ def fast_non_dominated_sort(population):
     while len(fronts[i]) != 0:
         next_front = []
         for pi in fronts[i]:
-            p = population[pi]
-            for qi in p.dominates:
-                q = population[qi]
-                q.dominated_cardinal -= 1
-                if q.dominated_cardinal == 0:
-                    q.rank = i + 2
+            p = population_coords[pi]
+            for qi in np.argwhere(domination_table[pi,:]==True).T[0]:
+                q = population_coords[qi]
+                dominated_cardinal[qi] -= 1
+                if dominated_cardinal[qi] == 0:
+                    ranks[qi] = i + 2
                     next_front.append(qi)
         i += 1
         fronts.append(next_front)
 
-    fronts.pop()
-    return fronts
+    return fronts, ranks
 
 
 def dominates(p,q):
@@ -70,9 +66,9 @@ def dominates(p,q):
     Returns 1 if p dominates q, -1
     if q dominates p, 0 otherwise.
     '''
-    if p.value[0] >= q.value[0] and p.value[1] >= q.value[1]:
+    if p[0] >= q[0] and p[1] >= q[1]:
         return 1
-    elif p.value[0] <= q.value[0] and p.value[1] <= q.value[1]:
+    elif p[0] <= q[0] and p[1] <= q[1]:
         return -1
     else:
         return 0
@@ -82,7 +78,6 @@ def get_reference_coords(div, dim):
     '''
     Generates a list of coordinates that divide each
     goal axis by specified number of divisions.
-    TODO: Extend to more then two axes.
     '''
 
     start_vector = np.ones((div+1,))
@@ -109,7 +104,7 @@ def get_reference_coords(div, dim):
 
 def normalize(candidate_scores, nondom_scores):
     '''
-    Normalizes scores if candidate solutions according
+    Normalizes scores of candidate solutions according
     to NSGA-III specification.
     '''
 
@@ -184,7 +179,9 @@ def niche(ref_count,
           candidates,
           passing_number):
     '''
-
+    From the last front choose points which will be added
+    to the next generation.
+    TODO: clean up the code and fix bug with duplicates
     '''
     last_front_assoc_table = assoc_table[passing_number:,:]
     new_population = candidates[:passing_number]
@@ -213,68 +210,30 @@ def niche(ref_count,
     return new_population
 
 
-def visualize_ranks(population, figname):
-    for s in population:
+def visualize_ranks(population, figname, ranks=None):
+    for i, s in enumerate(population):
         color = 'm'
-        if s.rank != None:
-            if s.rank % 3 == 1:
+        if type(ranks) is np.ndarray:
+            if ranks[i] % 3 == 1:
                 color = 'r'
-            elif s.rank % 3 == 2:
+            elif ranks[i] % 3 == 2:
                 color = 'g'
             else:
                 color = 'b'
-        plt.scatter(*s.value, c=color)
+        plt.scatter(*s, c=color)
     plt.savefig(figname)
 
-if __name__ == '__main__':
-    '''
-    Prepare initial population
-    '''
-    popsize = 500
+def nsga3(initial_coords, div):
 
-    '''
-    Give some concrete values to solutions for testing
-    purpouses
-    '''
-    initial_coords = np.random.random_sample((popsize,2))
-
-    '''
-    initial_coords = np.array([[0.47211927, 0.98787129],
-                       [0.94094343, 0.7684067 ],
-                       [0.70284234, 0.91674066],
-                       [0.21146251, 0.60112486],
-                       [0.04835416, 0.89512353],
-                       [0.31512954, 0.48553947],
-                       [0.52879547, 0.27766949],
-                       [0.96938697, 0.750783  ],
-                       [0.12147045, 0.38973397],
-                       [0.20875761, 0.6897253 ],
-                       [0.60568495, 0.24796033],
-                       [0.15599147, 0.95841993],
-                       [0.26278643, 0.1886119 ],
-                       [0.97070001, 0.36794984],
-                       [0.91044592, 0.71886261],
-                       [0.52536064, 0.58637707],
-                       [0.58728183, 0.99748163],
-                       [0.13788234, 0.23183102],
-                       [0.86295771, 0.84656466],
-                       [0.05840085, 0.45842131]])
-    '''
-
-    initial_population = []
-    for c in initial_coords:
-        initial_population.append(Solution(c))
-
-    initial_population = np.array(initial_population)
-
-    visualize_ranks(initial_population, '1_initial.png')
+    popsize = initial_coords.shape[0]
+    dim = initial_coords.shape[1]
+    #visualize_ranks(initial_coords, '1_initial.png')
 
     '''
     Perform nondominated sort
     '''
-    fronts = fast_non_dominated_sort(initial_population)
-    nondom = initial_population[fronts[0]]
-    visualize_ranks(initial_population, '2_ranked.png')
+    fronts, ranks = fast_non_dominated_sort(initial_coords)
+    #visualize_ranks(initial_coords, '2_ranked.png', ranks)
 
     '''
     Make a set of candidates that will compete for the
@@ -289,10 +248,7 @@ if __name__ == '__main__':
             candidates = candidates + f
             candidates_number += len(f)
         elif candidates_number + len(f) == cutoff_number:
-            '''
-            TODO: implement this when genetic loop is developed
-            '''
-            print('No need to perform selection!')
+            return candidates + f
         else:
             passing_number = len(candidates)
             points_to_choose_number = cutoff_number - passing_number
@@ -310,18 +266,16 @@ if __name__ == '__main__':
     '''
     Generate reference points
     '''
-    dimensions = 2
-    divisions = 4
-    reference_points = get_reference_coords(divisions, dimensions)
+    reference_points = get_reference_coords(div, dim)
 
     '''
     Visualize the reference points
     '''
-    if dimensions == 2:
+    if dim== 2:
         fig = plt.figure()
         plt.scatter(reference_points[:,0], reference_points[:,1])
         plt.savefig('3_references.png')
-    elif dimensions == 3:
+    elif dim== 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.view_init(elev=10., azim=30)
@@ -331,15 +285,15 @@ if __name__ == '__main__':
     '''
     Normalize candidate scores
     '''
-    candidate_scores = np.array([s.value for s in initial_population[candidates]])
-    nondom_scores = np.array([s.value for s in nondom])
+    candidate_scores = initial_coords[candidates]
+    nondom_scores = initial_coords[fronts[0]]
 
     normalized_candidate_scores,ideal_point,intercepts = normalize(candidate_scores, nondom_scores)
 
     '''
     Visualize normalized candidate scores with reference points
     '''
-    if dimensions == 2:
+    if dim== 2:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_xlim(-0.1,1.1)
@@ -368,7 +322,7 @@ if __name__ == '__main__':
     '''
     Visualize the result
     '''
-    if dimensions == 2:
+    if dim== 2:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_xlim(-0.1,1.1)
@@ -424,7 +378,7 @@ if __name__ == '__main__':
     for l in passed_last_front_a:
         rejected_last_front_a = rejected_last_front_a[rejected_last_front_a!=l]
 
-    if dimensions == 2:
+    if dim== 2:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_xlim(-0.1,1.1)
@@ -450,4 +404,10 @@ if __name__ == '__main__':
             else:
                 ax.plot((0,1), (0,1), c)
         plt.savefig('6_niched.png')
+
+    return new_population
+
+if __name__ == '__main__':
+    init = np.random.random_sample((200, 2))
+    print(nsga3(init, 10))
 
