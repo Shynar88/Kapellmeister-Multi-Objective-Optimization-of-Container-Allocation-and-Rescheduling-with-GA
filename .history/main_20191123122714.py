@@ -154,34 +154,29 @@ class GeneticAlgorithm():
         change_index = random.randint(0, len(chromosome.node_ids))
         while True:
             new_node = random.choice(self.nodes)
-            if chromosome.node_ids[change_index] == new_node.id:
+            if chromosome.nodes[change_index].id == new_node.id:
                 continue
             else: 
-                chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
-                chromosome.node_ids[change_index] = new_node.id
-                chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[change_index])
+                chromosome.nodes[change_index] = new_node
                 break
         return chromosome
 
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2
         #selects one of the unassigned containers and assigns it to a random node regardless of its remaining resources
-        indexes = [i for i, x in enumerate(chromosome.node_ids) if x == None]
+        indexes = [i for i, x in enumerate(chromosome.nodes) if x == None]
         assign_index = random.choice(indexes)
-        new_node = random.choice(self.nodes)
-        chromosome.node_ids[assign_index] = new_node.id
-        chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[assign_index])
+        chromosome.nodes[assign_index] = random.choice(self.nodes)
         return chromosome
 
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
         while True:
-            change_index = random.randint(0, len(chromosome.node_ids))
-            if chromosome.node_ids[change_index] == None:
+            change_index = random.randint(0, len(chromosome.nodes))
+            if chromosome.nodes[change_index] == None:
                 continue
             else: 
-                chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
-                chromosome.node_ids[change_index] = None
+                chromosome.nodes[change_index] = None
                 break
         return chromosome
 
