@@ -123,7 +123,7 @@ class GeneticAlgorithm():
 
     def mutate(self, chromosome):  
         #TODO mutation
-        mutation_type = random.randint(0, 4)
+        mutation_type = random.randint(4)
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
