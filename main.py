@@ -8,13 +8,15 @@ import numpy as np
 
 class Node():
     # {}_specified means initial capacity of the resource
-    def __init__(self, remaining_cpu, remaining_memory, cpu_specified, memory_specified, id):
+    def __init__(self, remaining_cpu, remaining_memory, cpu_specified, memory_specified, id, max_power, idle_power):
         self.id = id
         self.remaining_cpu = remaining_cpu
         self.remaining_memory = remaining_memory
         self.cpu_specified = cpu_specified
         self.memory_specified = memory_specified
         self.containers_list = []
+        self.max_power = max_power
+        self.idle_power = idle_power
 
     def assign_container(self, container):
         self.remaining_cpu -= container.required_cpu
@@ -25,9 +27,10 @@ class Node():
         self.remaining_memory += container.required_memory
 
 class Container():
-    def __init__(self, required_cpu, required_memory):
+    def __init__(self, required_cpu, required_memory, task_type):
         self.required_cpu = required_cpu
         self.required_memory = required_memory #size in MB
+        self.task_type = task_type
 
 class Chromosome():
     def __init__(self, node_ids, containers, nodes_info):
@@ -43,7 +46,72 @@ class Chromosome():
         #TODO Power efficient
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
+        return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
+    def off_1(self):
+        v = 0
+        node_ids = self.node_ids
+        nodes = self.nodes_info
+        for node_id in node_ids:
+            if (node_id == None):
+                continue
+            t = 0
+            i = 0
+            for each in nodes[node_id].containers_list:
+                i += 1
+                t += i
+            v += t
+        return v
+    def off_2(self):
+        v = 0
+        node_ids = self.node_ids
+        nodes = self.nodes_info
+        for node_id in node_ids:
+            if (node_id == None):
+                continue
+            dic = {}
+            i = 1
+            for container in nodes[node_id].containers_list:
+                if (dic[container.type] == None):
+                    dic[container.type] = 1
+                else:
+                    dic[container.type] += 1
+            for key in dic:
+                n = dic[key]
+                v += (n+1)*n/2
+        return v
+    def off_3(self):
+        v = 0
+        node_ids = self.node_ids
+        nodes = self.nodes_info
+        for node_id in node_ids:
+            if (node_id == None):
+                continue
+            node = nodes[node_id]
+            c = (node.cpu_specified - node.remaining_cpu)/node.cpu_specified
+            m = (node.memory_specified - node.remaining_memory)/node.memory_specified
+            p = (node.max_power - node.idle_power)* (c+m)/2 + node.idle_power
+        v += p
+        return v
+    def off_4(self):
+        v = 0
+        i = 0
+        node_ids = self.node_ids
+        nodes = self.nodes_info
+        for node_id in node_ids:
+            if (node_id == None):
+                continue
+            node = nodes[node_id]
+            i += 1
+            v += abs(node.remaining_cpu-node.remaining_memory)
         return
+    def off_5(self):
+        node_ids = self.node_ids
+        v = 0
+        for node_id in node_ids:
+            if (node_id == None):
+                v += 1
+                continue
+        return v
 
 class GeneticAlgorithm():
     def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num):
@@ -63,8 +131,10 @@ class GeneticAlgorithm():
         nodes_list = []
         cpu_specified = 4  #according to paper
         memory_specified = 4000 #according to paper
+        max_power = 160 
+        idle_power = 80
         for i in range(self.nodes_num):
-            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified, i)
+            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified, i, max_power, idle_power)
             nodes_list.append(node)
         return nodes_list
     
@@ -73,8 +143,9 @@ class GeneticAlgorithm():
         containers_list = []
         cpu_required = 2
         memory_required = 200
+        task_type = "A"
         for _ in range(self.containers_num):
-            container = Container(cpu_required, memory_required)
+            container = Container(cpu_required, memory_required, task_type)
             containers_list.append(container)
         return containers_list
 
