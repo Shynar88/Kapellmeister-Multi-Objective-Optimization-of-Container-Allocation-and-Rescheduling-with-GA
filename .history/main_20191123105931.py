@@ -139,21 +139,12 @@ class GeneticAlgorithm():
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2
         #selects one of the unassigned containers and assigns it to a random node regardless of its remaining resources
-        indexes = [i for i, x in enumerate(chromosome.nodes) if x == None]
-        assign_index = random.choice(indexes)
-        chromosome.nodes[assign_index] = random.choice(self.nodes)
-        return chromosome
+        indices = [i for i, x in enumerate(my_list) if x == "whatever"]
+        return
 
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
-        while True:
-            change_index = random.randint(0, len(chromosome.nodes))
-            if chromosome.nodes[change_index] == None:
-                continue
-            else: 
-                chromosome.nodes[change_index] = None
-                break
-        return chromosome
+        return
 
 
     def selection(self, population):

@@ -77,10 +77,7 @@ class GeneticAlgorithm():
         containers = copy.deepcopy(self.containers) 
         nodes = []
         for _ in range(self.containers_num):
-            if random.random() < 0.9: #with 90% probability assign conainer to node
-                nodes.append(random.choice(self.nodes))
-            else:
-                nodes.append(None)
+            nodes.append(random.choice(self.nodes))
         chromosome = Chromosome(nodes, containers)
         return chromosome
 
@@ -139,21 +136,11 @@ class GeneticAlgorithm():
     def assign_unassigned_mutation(self, chromosome):
         #TODO mutation type 2
         #selects one of the unassigned containers and assigns it to a random node regardless of its remaining resources
-        indexes = [i for i, x in enumerate(chromosome.nodes) if x == None]
-        assign_index = random.choice(indexes)
-        chromosome.nodes[assign_index] = random.choice(self.nodes)
-        return chromosome
+        return
 
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
-        while True:
-            change_index = random.randint(0, len(chromosome.nodes))
-            if chromosome.nodes[change_index] == None:
-                continue
-            else: 
-                chromosome.nodes[change_index] = None
-                break
-        return chromosome
+        return
 
 
     def selection(self, population):

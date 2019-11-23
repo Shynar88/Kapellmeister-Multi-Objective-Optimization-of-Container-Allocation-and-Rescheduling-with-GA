@@ -146,14 +146,7 @@ class GeneticAlgorithm():
 
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
-        while True:
-            change_index = random.randint(0, len(chromosome.nodes))
-            if chromosome.nodes[change_index] == None:
-                continue
-            else: 
-                chromosome.nodes[change_index] = None
-                break
-        return chromosome
+        return
 
 
     def selection(self, population):

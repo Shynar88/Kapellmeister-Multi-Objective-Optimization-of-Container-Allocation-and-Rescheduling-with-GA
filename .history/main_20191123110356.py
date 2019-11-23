@@ -153,7 +153,7 @@ class GeneticAlgorithm():
             else: 
                 chromosome.nodes[change_index] = None
                 break
-        return chromosome
+        return
 
 
     def selection(self, population):
