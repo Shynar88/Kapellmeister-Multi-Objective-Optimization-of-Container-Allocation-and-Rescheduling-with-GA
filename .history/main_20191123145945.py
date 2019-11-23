@@ -25,7 +25,7 @@ class Node():
     def unassign_container(self, container):
         self.remaining_cpu += container.required_cpu
         self.remaining_memory += container.required_memory
-        self.containers_list.remove(container) # might crash because __eq__ for Conatiner class is not defined
+        self.containers_list.remove(container) # might crash because 
 
 class Container():
     def __init__(self, required_cpu, required_memory, task_type):
@@ -242,8 +242,6 @@ class GeneticAlgorithm():
         #TODO mutation type 2
         #selects one of the unassigned containers and assigns it to a random node regardless of its remaining resources
         indexes = [i for i, x in enumerate(chromosome.node_ids) if x == None]
-        if not indexes:
-            return chromosome
         assign_index = random.choice(indexes)
         new_node = random.choice(self.nodes)
         chromosome.node_ids[assign_index] = new_node.id

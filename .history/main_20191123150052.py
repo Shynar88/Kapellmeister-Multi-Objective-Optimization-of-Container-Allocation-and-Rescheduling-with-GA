@@ -25,7 +25,7 @@ class Node():
     def unassign_container(self, container):
         self.remaining_cpu += container.required_cpu
         self.remaining_memory += container.required_memory
-        self.containers_list.remove(container) # might crash because __eq__ for Conatiner class is not defined
+        self.containers_list.remove(container) # might crash because 
 
 class Container():
     def __init__(self, required_cpu, required_memory, task_type):

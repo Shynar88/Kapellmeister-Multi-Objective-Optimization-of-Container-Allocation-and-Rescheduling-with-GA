@@ -25,7 +25,7 @@ class Node():
     def unassign_container(self, container):
         self.remaining_cpu += container.required_cpu
         self.remaining_memory += container.required_memory
-        self.containers_list.remove(container) # might crash because __eq__ for Conatiner class is not defined
+        self.containers_list.remove(container)
 
 class Container():
     def __init__(self, required_cpu, required_memory, task_type):
@@ -211,7 +211,6 @@ class GeneticAlgorithm():
         if random.random() < self.mutation_rate:
             i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
             # recalculating resources
-            # TODO: swap only nodes
             chromosome.nodes_info[chromosome.node_ids[i1]].unassign_container(chromosome.containers[i1])
             chromosome.nodes_info[chromosome.node_ids[i1]].assign_container(chromosome.containers[i2])
             chromosome.nodes_info[chromosome.node_ids[i2]].unassign_container(chromosome.containers[i2])
@@ -242,8 +241,6 @@ class GeneticAlgorithm():
         #TODO mutation type 2
         #selects one of the unassigned containers and assigns it to a random node regardless of its remaining resources
         indexes = [i for i, x in enumerate(chromosome.node_ids) if x == None]
-        if not indexes:
-            return chromosome
         assign_index = random.choice(indexes)
         new_node = random.choice(self.nodes)
         chromosome.node_ids[assign_index] = new_node.id
