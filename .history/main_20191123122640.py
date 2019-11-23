@@ -151,15 +151,13 @@ class GeneticAlgorithm():
     
     def change_mutation(self, chromosome):
         #TODO mutation type 1
-        change_index = random.randint(0, len(chromosome.node_ids))
+        change_index = random.randint(0, len(chromosome.nodes))
         while True:
             new_node = random.choice(self.nodes)
-            if chromosome.node_ids[change_index] == new_node.id:
+            if chromosome.nodes[change_index].id == new_node.id:
                 continue
             else: 
-                chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
-                chromosome.node_ids[change_index] = new_node.id
-                chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[change_index])
+                chromosome.nodes[change_index] = new_node
                 break
         return chromosome
 

@@ -157,7 +157,7 @@ class GeneticAlgorithm():
             if chromosome.node_ids[change_index] == new_node.id:
                 continue
             else: 
-                chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
+                chromosome.nodes_info[node_ids[change_index]].unassign_container(chromosome.containers[change_index])
                 chromosome.node_ids[change_index] = new_node.id
                 chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[change_index])
                 break

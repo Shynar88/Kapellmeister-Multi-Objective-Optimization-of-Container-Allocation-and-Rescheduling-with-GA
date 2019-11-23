@@ -87,10 +87,10 @@ class GeneticAlgorithm():
         for i in range(len(self.containers)):
             if random.random() < 0.9: #with 90% probability assign conainer to node, not specified in paper
                 node_selected = random.choice(nodes_info) # the node should be passed by reference for keeping track of resources
-                node_ids.append(node_selected.id)
+                nodes.append(node_selected)
                 node_selected.assign_container(containers[i])
             else:
-                node_ids.append(None)
+                nodes.append(None)
         chromosome = Chromosome(node_ids, containers)
         chromosome.nodes_info = nodes_info
         return chromosome
@@ -108,23 +108,19 @@ class GeneticAlgorithm():
         rand_int = random.randint(0, 1)
         nodes_info = copy.deepcopy(self.nodes) # create nodes_info for future child
         if rand_int == 1:
-            child_node_ids = (p1.node_ids[:crossover_point] +  #here could be problem with synchronization, as node should be passed by reference and not by instance
-                     p2.node_ids[crossover_point:]) 
+            child_nodes = (p1.nodes[:crossover_point] +  #here could be problem with synchronization, as node should be passed by reference and not by instance
+                     p2.nodes[crossover_point:]) 
         else:
-            child_node_ids = (p2.node_ids[crossover_point:] +
-                     p1.node_ids[:crossover_point])
-        node_ids = copy.deepcopy(child_node_ids)
+            child_nodes = (p2.nodes[crossover_point:] +
+                     p1.nodes[:crossover_point])
         containers = copy.deepcopy(p1.containers) #both parents have same containers
-        chromosome = Chromosome(node_ids, containers)
-        #recalculating resources of nodes
-        for (node_id, container) in zip(node_ids, containers):
-            if node_id != None:
-                nodes_info[node_id].assign_container(container)
+        chromosome = Chromosome(copy.deepcopy(child_nodes), containers)
         chromosome.nodes_info = nodes_info 
         return chromosome
 
     def mutate(self, chromosome, mutation_type):  
         #TODO mutation
+        #TODO need to hande resources!!!!
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
@@ -137,29 +133,21 @@ class GeneticAlgorithm():
     def swap_mutation(self, chromosome):
         #TODO mutation type 0
         if random.random() < self.mutation_rate:
-            i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
-            # recalculating resources
-            chromosome.nodes_info[chromosome.node_ids[i1]].unassign_container(chromosome.containers[i1])
-            chromosome.nodes_info[chromosome.node_ids[i1]].assign_container(chromosome.containers[i2])
-            chromosome.nodes_info[chromosome.node_ids[i2]].unassign_container(chromosome.containers[i2])
-            chromosome.nodes_info[chromosome.node_ids[i2]].assign_container(chromosome.containers[i1])
-            # swapping ids
-            chromosome.node_ids[i1], chromosome.node_ids[i2] = chromosome.node_ids[i2], chromosome.node_ids[i1]
+            i1, i2 = random.sample(range(len(chromosome.nodes)), 2)
+            chromosome.nodes[i1], chromosome.nodes[i2] = chromosome.nodes[i2], chromosome.nodes[i1]
             chromosome.fitness = chromosome.get_fitness() # fitness recalculation 
             return chromosome
         return chromosome
     
     def change_mutation(self, chromosome):
         #TODO mutation type 1
-        change_index = random.randint(0, len(chromosome.node_ids))
+        change_index = random.randint(0, len(chromosome.nodes))
         while True:
             new_node = random.choice(self.nodes)
-            if chromosome.node_ids[change_index] == new_node.id:
+            if chromosome.nodes[change_index].id == new_node.id:
                 continue
             else: 
-                chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
-                chromosome.node_ids[change_index] = new_node.id
-                chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[change_index])
+                chromosome.nodes[change_index] = new_node
                 break
         return chromosome
 
