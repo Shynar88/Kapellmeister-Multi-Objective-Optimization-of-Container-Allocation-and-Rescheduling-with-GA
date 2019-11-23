@@ -29,10 +29,10 @@ class Container():
         self.required_memory = required_memory #size in MB
 
 class Chromosome():
-    def __init__(self, node_ids, containers, nodes_info):
+    def __init__(self, node_ids, containers):
         self.node_ids = node_ids #node ids
         self.containers = containers
-        self.nodes_info = nodes_info #for tracking the resource usage per chromosome 
+        self.nodes_info = [] #for tracking the resource usage per chromosome 
         self.fitness = self.get_fitness()
 
     def get_fitness(self):
@@ -91,7 +91,8 @@ class GeneticAlgorithm():
                 node_selected.assign_container(containers[i])
             else:
                 node_ids.append(None)
-        chromosome = Chromosome(node_ids, containers, nodes_info)
+        chromosome = Chromosome(node_ids, containers)
+        chromosome.nodes_info = nodes_info
         return chromosome
 
     def create_initial_population(self):
@@ -114,11 +115,12 @@ class GeneticAlgorithm():
                      p1.node_ids[:crossover_point])
         node_ids = copy.deepcopy(child_node_ids)
         containers = copy.deepcopy(p1.containers) #both parents have same containers
+        chromosome = Chromosome(node_ids, containers)
         #recalculating resources of nodes
         for (node_id, container) in zip(node_ids, containers):
             if node_id != None:
                 nodes_info[node_id].assign_container(container)
-        chromosome = Chromosome(node_ids, containers, nodes_info)
+        chromosome.nodes_info = nodes_info 
         return chromosome
 
     def mutate(self, chromosome, mutation_type):  
@@ -200,7 +202,7 @@ class GeneticAlgorithm():
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', type=int, default=300, help="population size") #212
-    parser.add_argument('-ms', type=int, default=150, help="mating pool size") #106
+    parser.add_argument('-ms', type=int, default=150, help="mating pool size")
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
     parser.add_argument('-e', type=int, default=30, help="elite_size")
     parser.add_argument('-mg', type=int, default=50, help="max generations") #1000

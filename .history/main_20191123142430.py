@@ -114,11 +114,12 @@ class GeneticAlgorithm():
                      p1.node_ids[:crossover_point])
         node_ids = copy.deepcopy(child_node_ids)
         containers = copy.deepcopy(p1.containers) #both parents have same containers
+        chromosome = Chromosome(node_ids, containers)
         #recalculating resources of nodes
         for (node_id, container) in zip(node_ids, containers):
             if node_id != None:
                 nodes_info[node_id].assign_container(container)
-        chromosome = Chromosome(node_ids, containers, nodes_info)
+        chromosome.nodes_info = nodes_info 
         return chromosome
 
     def mutate(self, chromosome, mutation_type):  
