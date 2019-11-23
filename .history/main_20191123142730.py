@@ -159,7 +159,6 @@ class GeneticAlgorithm():
                 chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
                 chromosome.node_ids[change_index] = new_node.id
                 chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[change_index])
-                chromosome.fitness = chromosome.get_fitness()
                 break
         return chromosome
 
@@ -171,7 +170,6 @@ class GeneticAlgorithm():
         new_node = random.choice(self.nodes)
         chromosome.node_ids[assign_index] = new_node.id
         chromosome.nodes_info[new_node.id].assign_container(chromosome.containers[assign_index])
-        chromosome.fitness = chromosome.get_fitness()
         return chromosome
 
     def unassign_assigned_mutation(self, chromosome):
@@ -183,7 +181,6 @@ class GeneticAlgorithm():
             else: 
                 chromosome.nodes_info[chromosome.node_ids[change_index]].unassign_container(chromosome.containers[change_index])
                 chromosome.node_ids[change_index] = None
-                chromosome.fitness = chromosome.get_fitness()
                 break
         return chromosome
 
