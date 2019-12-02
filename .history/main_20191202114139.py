@@ -282,7 +282,7 @@ class GeneticAlgorithm():
             infeasability_score = chromosome.get_infeasability()
             score_n_candidate_list.append(infeasability_score, chromosome)
         score_n_candidate_list.sort(key=lambda tup: tup[0])
-        return score_n_candidate_list[0][1] 
+        return score_n_candidate_list[0][1]
 
     def selection(self, population): #-> mating pool of size population/2
         #TODO selection

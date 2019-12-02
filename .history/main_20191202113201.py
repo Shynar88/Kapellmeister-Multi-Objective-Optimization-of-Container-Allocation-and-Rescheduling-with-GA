@@ -277,12 +277,7 @@ class GeneticAlgorithm():
         return chromosome
 
     def get_fittest(self, candidates):
-        score_n_candidate_list = []
-        for chromosome in candidates:
-            infeasability_score = chromosome.get_infeasability()
-            score_n_candidate_list.append(infeasability_score, chromosome)
-        score_n_candidate_list.sort(key=lambda tup: tup[0])
-        return score_n_candidate_list[0][1] 
+        pass
 
     def selection(self, population): #-> mating pool of size population/2
         #TODO selection
@@ -290,7 +285,7 @@ class GeneticAlgorithm():
         mating_pool = []
         while len(mating_pool) < len(population)//2: #or self.mat_pool_size
             participants = random.sample(population, 15) #self.tournament_size
-            fittest = self.get_fittest(participants)
+            fittest = get_fittest(participants)
             mating_pool.append(fittest)
         return mating_pool
 

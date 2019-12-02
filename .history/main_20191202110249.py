@@ -49,17 +49,6 @@ class Chromosome():
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
         return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
-
-    # the higher the score, the more infeasable solution is
-    # 0 means solution is feasable
-    # The number of constraint violations is computed by counting the number of nodes that host containers more than its computational capabilities (CPU or memory).
-    def get_infeasability(self):
-        infeasability_score = 0
-        for node in self.nodes_info:
-            if node.remaining_cpu < 0 or node.remaining_memory < 0:
-                infeasability_score += 1
-        return infeasability_score 
-
     def off_1(self):
         v = 0
         node_ids = self.node_ids
@@ -276,13 +265,11 @@ class GeneticAlgorithm():
                 break
         return chromosome
 
-    def get_fittest(self, candidates):
-        score_n_candidate_list = []
-        for chromosome in candidates:
-            infeasability_score = chromosome.get_infeasability()
-            score_n_candidate_list.append(infeasability_score, chromosome)
-        score_n_candidate_list.sort(key=lambda tup: tup[0])
-        return score_n_candidate_list[0][1] 
+    def get_infeasability_score():
+        pass
+
+    def get_fittest(candidates):
+        pass
 
     def selection(self, population): #-> mating pool of size population/2
         #TODO selection
@@ -290,7 +277,7 @@ class GeneticAlgorithm():
         mating_pool = []
         while len(mating_pool) < len(population)//2: #or self.mat_pool_size
             participants = random.sample(population, 15) #self.tournament_size
-            fittest = self.get_fittest(participants)
+            fittest = get_fittest(participants)
             mating_pool.append(fittest)
         return mating_pool
 
