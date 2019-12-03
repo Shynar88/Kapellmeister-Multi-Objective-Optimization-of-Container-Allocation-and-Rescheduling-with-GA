@@ -6,6 +6,7 @@ import sys
 import copy
 import numpy as np
 import logging
+from nsga_3.nsga_3 import nsga3
 
 class Node():
     # {}_specified means initial capacity of the resource
@@ -304,21 +305,23 @@ class GeneticAlgorithm():
         #TODO NSGA III
         population = self.create_initial_population()
         number_of_objectives = 5
-        divisions = 6
+        divisions = 2
         for i in range(self.max_generations):
             new_population = self.generate_new_population(population)
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
-            selected_indices = nsga3_dummy(combined_population_coords, divisions)
-            population, best_front_indices = np.array(combined_population)[selected_indices], selected_indices
+            selected_indices, best_front_indices = nsga3_dummy(combined_population_coords * (-1), divisions)
+            population = np.array(combined_population)[selected_indices]
+            population = list(population)
             write_log(population)
-        best_pareto_front = combined_population[best_front_indices]
+        best_pareto_front = np.array(combined_population)[best_front_indices]
         return best_pareto_front
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
     selected_indices = np.arange(0, int(pop_length/2))
-    return selected_indices
+    best_front_indices = np.arange(0, int(pop_length/4))
+    return selected_indices, best_front_indices
 
 # logging data
 def write_log(population):
