@@ -62,20 +62,19 @@ def least_request_priority(nodes, container):
             best_candidate = n
     return n
 
-def main():
-    # n1 = Node(4,16000,1,"",[])
-    # n2 = Node(4,8000,2,"",[])
-    # n3 = Node(2,1024,3,"",[])
-    # n4 = Node(6,6512,4,"",[])
-    # c = []
-    # c.append(Container(1,128,1,""))
-    # c.append(Container(2,1000,2,""))
-    # c.append(Container(4,2000,3,""))
-    # 1
-    # [n.resources() for n in nodes]
-    # n1.used_cpu=4
-    # n2.used_mem=8000
-    # least_request_priority(nodes, c[1])
-    print("Hi")
-if __name__ == "__main__":
-    main()
+# def main():
+#     # n1 = Node(4,16000,1,"",[])
+#     # n2 = Node(4,8000,2,"",[])
+#     # n3 = Node(2,1024,3,"",[])
+#     # n4 = Node(6,6512,4,"",[])
+#     # c = []
+#     # c.append(Container(1,128,1,""))
+#     # c.append(Container(2,1000,2,""))
+#     # c.append(Container(4,2000,3,""))
+#     # 1
+#     # [n.resources() for n in nodes]
+#     # n1.used_cpu=4
+#     # n2.used_mem=8000
+#     # least_request_priority(nodes, c[1])
+# if __name__ == "__main__":
+#     main()
