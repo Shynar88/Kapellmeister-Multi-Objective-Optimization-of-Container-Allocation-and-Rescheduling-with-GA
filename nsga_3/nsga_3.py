@@ -1,4 +1,5 @@
 import numpy as np
+import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.special import binom
@@ -266,13 +267,11 @@ def nsga3(initial_coords, div):
 
     popsize = initial_coords.shape[0]
     dim = initial_coords.shape[1]
-    visualize_ranks(initial_coords, '1_initial.png')
 
     '''
     Perform nondominated sort
     '''
     fronts, ranks = fast_non_dominated_sort(initial_coords)
-    visualize_ranks(initial_coords, '2_ranked.png', ranks)
 
     '''
     Make a set of candidates that will compete for the
@@ -308,20 +307,6 @@ def nsga3(initial_coords, div):
     reference_points = get_reference_coords(div, dim)
 
     '''
-    Visualize the reference points
-    '''
-    if dim== 2:
-        fig = plt.figure()
-        plt.scatter(reference_points[:,0], reference_points[:,1])
-        plt.savefig('3_references.png')
-    elif dim== 3:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.view_init(elev=10., azim=30)
-        ax.scatter(reference_points[:,0], reference_points[:,1], reference_points[:,2])
-        plt.savefig('3_references.png')
-
-    '''
     Normalize candidate scores
     '''
     candidate_scores = initial_coords[candidates]
@@ -330,66 +315,12 @@ def nsga3(initial_coords, div):
     normalized_candidate_scores,ideal_point,intercepts = normalize(candidate_scores, nondom_scores)
 
     '''
-    Visualize normalized candidate scores with reference points
-    '''
-    if dim== 2:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlim(-0.1,1.1)
-        ax.set_ylim(-0.1,1.1)
-        ax.scatter(normalized_candidate_scores[:,0],normalized_candidate_scores[:,1])
-
-        for r in reference_points:
-            x, y = r
-            if x > y:
-                ax.plot((0,1), (0,y/x), 'r-')
-            elif y > x:
-                ax.plot((0,x/y), (0,1), 'r-')
-            else:
-                ax.plot((0,1), (0,1), 'r-')
-
-        plt.savefig('4_normalized.png')
-
-    '''
     For each candidate point find out its nearest reference line and
     distance to it
     '''
     ref_to_sol_assoc_table, assoc_table, ref_to_last_assoc_table, ref_count = associate(reference_points,
                                        normalized_candidate_scores,
                                        passing_number)
-
-    '''
-    Visualize the result
-    '''
-    if dim== 2:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlim(-0.1,1.1)
-        ax.set_ylim(-0.1,1.1)
-        for i, s in enumerate(normalized_candidate_scores):
-            ref_point = int(assoc_table[i,0])
-            if ref_point%3 == 0:
-                c = 'r'
-            elif ref_point%3 == 1:
-                c = 'g'
-            else:
-                c = 'b'
-            ax.scatter(s[0], s[1], c=c)
-        for i, r in enumerate(reference_points):
-            if i%3 == 0:
-                c = 'r--'
-            elif i%3 == 1:
-                c = 'g--'
-            else:
-                c = 'b--'
-            x, y = r
-            if x > y:
-                ax.plot((0,1), (0,y/x), c)
-            elif y > x:
-                ax.plot((0,x/y), (0,1), c)
-            else:
-                ax.plot((0,1), (0,1), c)
-        plt.savefig('5_associated.png')
 
     '''
     Niching: delete extra points
@@ -401,56 +332,15 @@ def nsga3(initial_coords, div):
                            candidates,
                            passing_number)
 
-    '''
-    Visualize the result
-    '''
-
-    new_pop_a = np.array(new_population)
-    candidates_a = np.array(candidates)
-    last_front_a = np.array(last_front)
-
-    passed_last_front_a = new_pop_a[passing_number:]
-    rejected_last_front_a = np.copy(last_front_a)
-    default_pass_a = new_pop_a[:passing_number]
-
-    normalized_initial_coords = (initial_coords - ideal_point) / intercepts
-
-    for l in passed_last_front_a:
-        rejected_last_front_a = rejected_last_front_a[rejected_last_front_a!=l]
-
-    if dim== 2:
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_xlim(-0.1,1.1)
-        ax.set_ylim(-0.1,1.1)
-        for i, s in enumerate(normalized_initial_coords[passed_last_front_a]):
-            ax.scatter(s[0], s[1], c='r', marker='*')
-        for i, s in enumerate(normalized_initial_coords[rejected_last_front_a]):
-            ax.scatter(s[0], s[1], c='r', marker='x')
-        for i, s in enumerate(normalized_initial_coords[default_pass_a]):
-            ax.scatter(s[0], s[1], c='b', marker='.')
-        for i, r in enumerate(reference_points):
-            if i%3 == 0:
-                c = 'r--'
-            elif i%3 == 1:
-                c = 'g--'
-            else:
-                c = 'b--'
-            x, y = r
-            if x > y:
-                ax.plot((0,1), (0,y/x), c)
-            elif y > x:
-                ax.plot((0,x/y), (0,1), c)
-            else:
-                ax.plot((0,1), (0,1), c)
-        plt.savefig('6_niched.png')
-
     return new_population
 
 
 def main():
-    init = np.random.random_sample((400, 2))
-    solution = nsga3(init, 10)
+    init = np.random.random_sample((400, 5))
+    start = time.time()
+    solution = nsga3(init, 16)
+    stop = time.time()
+    print(stop-start, 's')
 
 
 if __name__ == '__main__':
