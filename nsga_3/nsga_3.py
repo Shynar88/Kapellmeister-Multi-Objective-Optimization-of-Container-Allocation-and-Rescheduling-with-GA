@@ -143,7 +143,11 @@ def normalize(candidate_scores, nondom_scores):
         intercepts = 1/plane
     except np.linalg.LinAlgError:
         index = np.random.randint(len(points))
-        intercepts = points[index]
+        coords = points[index]
+        intercepts = np.ones(len(coords)) * np.sum(coords)
+        print('Linalg fallback')
+
+    print('Intercepts', intercepts)
 
     return (candidate_scores - ideal_point)/intercepts, ideal_point, intercepts
 
@@ -332,13 +336,13 @@ def nsga3(initial_coords, div):
                            candidates,
                            passing_number)
 
-    return new_population
+    return new_population, fronts[0]
 
 
 def main():
-    init = np.random.random_sample((400, 5))
+    init = np.random.random_sample((400, 5)) * (-1)
     start = time.time()
-    solution = nsga3(init, 16)
+    solution = nsga3(init, 2)
     stop = time.time()
     print(stop-start, 's')
 
