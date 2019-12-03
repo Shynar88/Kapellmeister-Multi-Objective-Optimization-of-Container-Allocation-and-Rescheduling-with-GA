@@ -137,7 +137,7 @@ class GeneticAlgorithm():
         max_power = 160 
         idle_power = 80
         for i in range(self.nodes_num):
-            node = Node(cpu_specified, memory_specified, i, max_power, idle_power)
+            node = Node(cpu_specified, memory_specified, cpu_specified, memory_specified, i, max_power, idle_power)
             nodes_list.append(node)
         return nodes_list
     
