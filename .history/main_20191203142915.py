@@ -322,8 +322,10 @@ def nsga3_dummy(population_coords, divisions):
 
 # logging data
 def write_log(population):
+    # LOG_FORMAT = "%(asctime)s %(message)s"
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG)
+                        level = logging.DEBUG,
+                        format = LOG_FORMAT)
     logger = logging.getLogger()
     #make logging every 100 generations
     fintesses_list = []
