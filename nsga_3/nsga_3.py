@@ -187,12 +187,15 @@ def associate(reference_points, normalized_candidate_scores, passing_number):
     for i in range(passing_number):
         ref_count[np.int(sol_to_ref_assoc_table[i,0])] += 1
 
-    print(ref_to_sol_assoc_table)
+    print('ref_to_sol_assoc_table', ref_to_sol_assoc_table)
+    print('sol_to_ref_assoc_table', sol_to_ref_assoc_table)
+    print('ref_to_last_assoc_table', ref_to_last_assoc_table)
 
     return ref_to_sol_assoc_table, sol_to_ref_assoc_table, ref_to_last_assoc_table, ref_count
 
 def niche(ref_count,
           ref_to_sol_assoc_table,
+          ref_to_last_assoc_table,
           points_to_choose_number,
           candidates,
           passing_number):
@@ -219,9 +222,6 @@ def niche(ref_count,
     '''
     new_population = candidates[:passing_number]
     last_front = candidates[passing_number:]
-    enum_assoc_table = np.zeros((len(assoc_table), 3))
-    enum_assoc_table[:,1:] = assoc_table
-    enum_assoc_table[:,0] = np.arange(0,len(assoc_table))
 
     k = 1
     while k <= points_to_choose_number:
@@ -230,15 +230,18 @@ def niche(ref_count,
         best_ref_point = np.random.choice(best_ref_points)
         #last_front_best = np.argwhere(last_front_assoc_table[:,0]==best_ref_point).T[0] + passing_number
         #all_best = 
-        if last_front_best.shape[0] != 0:
+        last_front_best = [s[0] for s in ref_to_last_assoc_table[best_ref_point]]
+        if len(last_front_best) != 0:
             if ref_count[best_ref_point] == 0:
-                last_front_bestest_index = np.argmin(enum_assoc_table[last_front_best,2])
-                last_front_bestest = enum_assoc_table[last_front_best,:][last_front_bestest_index,0]
+                last_front_bestest = last_front_best[0]
+                ref_to_last_assoc_table[best_ref_point].pop(0)
                 new_population += [candidates[int(last_front_bestest)]]
             else:
-                new_population += [candidates[np.random.choice(last_front_best)]]
+                index = np.random.randint(len(last_front_best))
+                last_front_bestest = last_front_best[index]
+                ref_to_last_assoc_table[best_ref_point].pop(index)
+                new_population += [candidates[int(last_front_bestest)]]
             ref_count[best_ref_point] += 1
-            last_front_assoc_table[last_front_best-passing_number, 0] = -1
             k+=1
         else:
             ref_count[best_ref_point] = 1e9
@@ -354,9 +357,6 @@ def nsga3(initial_coords, div):
     ref_to_sol_assoc_table, assoc_table, ref_to_last_assoc_table, ref_count = associate(reference_points,
                                        normalized_candidate_scores,
                                        passing_number)
-    print(assoc_table)
-    print(ref_to_last_assoc_table)
-    return None
 
     '''
     Visualize the result
@@ -396,6 +396,7 @@ def nsga3(initial_coords, div):
     '''
     new_population = niche(ref_count,
                            ref_to_sol_assoc_table,
+                           ref_to_last_assoc_table,
                            points_to_choose_number,
                            candidates,
                            passing_number)
@@ -446,10 +447,12 @@ def nsga3(initial_coords, div):
 
     return new_population
 
-if __name__ == '__main__':
 
+def main():
     init = np.random.random_sample((10, 2))
     solution = nsga3(init, 5)
+    print(solution)
+    return
 
 
     ''' Test case 1 '''
@@ -484,3 +487,7 @@ if __name__ == '__main__':
         print('PASS')
 
 
+
+
+if __name__ == '__main__':
+    main()
