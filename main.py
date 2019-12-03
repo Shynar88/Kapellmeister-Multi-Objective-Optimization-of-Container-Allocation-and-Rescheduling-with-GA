@@ -62,44 +62,34 @@ class Chromosome():
 
     def off_1(self):
         v = 0
-        node_ids = self.node_ids
         nodes = self.nodes_info
-        for node_id in node_ids:
-            if (node_id == None):
-                continue
+        for node in nodes:
             t = 0
             i = 0
-            for each in nodes[node_id].containers_list:
-                i += 1
-                t += i
+            for each in node.containers_list:
+                i+=1
+                t+=i
             v += t
         return v
     def off_2(self):
-        v = 0
-        node_ids = self.node_ids
+        v =0
         nodes = self.nodes_info
-        for node_id in node_ids:
-            if (node_id == None):
-                continue
+        for node in nodes:
             dic = {}
-            i = 1
-            for container in nodes[node_id].containers_list:
-                if (dic[container.type] == None):
-                    dic[container.type] = 1
+            i =1
+            for container in node.containers_list:
+                if (dic.get(container.task_type) == None):
+                    dic[container.task_type] = 1
                 else:
-                    dic[container.type] += 1
+                    dic[container.task_type] += 1
             for key in dic:
                 n = dic[key]
                 v += (n+1)*n/2
         return v
     def off_3(self):
         v = 0
-        node_ids = self.node_ids
         nodes = self.nodes_info
-        for node_id in node_ids:
-            if (node_id == None):
-                continue
-            node = nodes[node_id]
+        for node in nodes:
             c = (node.cpu_specified - node.remaining_cpu)/node.cpu_specified
             m = (node.memory_specified - node.remaining_memory)/node.memory_specified
             p = (node.max_power - node.idle_power)* (c+m)/2 + node.idle_power
@@ -280,7 +270,7 @@ class GeneticAlgorithm():
         score_n_candidate_list = []
         for chromosome in candidates:
             infeasability_score = chromosome.get_infeasability()
-            score_n_candidate_list.append(infeasability_score, chromosome)
+            score_n_candidate_list.append((infeasability_score, chromosome))
         score_n_candidate_list.sort(key=lambda tup: tup[0])
         return score_n_candidate_list[0][1] 
 

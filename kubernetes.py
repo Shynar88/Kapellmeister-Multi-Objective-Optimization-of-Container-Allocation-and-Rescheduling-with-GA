@@ -71,7 +71,7 @@ def main():
     c.append(Container(1,128,1,""))
     c.append(Container(2,1000,2,""))
     c.append(Container(4,2000,3,""))
-    nodes = [n1,n2,n3,n4]
+    1
     [n.resources() for n in nodes]
     n1.used_cpu=4
     n2.used_mem=8000
