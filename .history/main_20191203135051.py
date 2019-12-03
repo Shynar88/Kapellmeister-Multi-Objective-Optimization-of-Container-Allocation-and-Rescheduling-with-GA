@@ -178,7 +178,7 @@ class GeneticAlgorithm():
 
     def crossover(self, p1, p2):  #p1 and p2 are of type Chromosome
         #TODO crossover
-        crossover_point = random.randint(1, len(p1.containers) - 1)
+        crossover_point = random.randint(1, len(p1.containers))
         rand_int = random.randint(0, 1)
         nodes_info = copy.deepcopy(self.nodes) # create nodes_info for future child
         if rand_int == 1:
@@ -198,7 +198,7 @@ class GeneticAlgorithm():
 
     def mutate(self, chromosome):  
         #TODO mutation
-        mutation_type = random.randint(0, 3)
+        mutation_type = random.randint(0, 4)
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
@@ -227,9 +227,9 @@ class GeneticAlgorithm():
     
     def change_mutation(self, chromosome):
         #TODO mutation type 1
-        change_index = random.randint(0, len(chromosome.node_ids) - 1)
+        change_index = random.randint(0, len(chromosome.node_ids))
         while chromosome.node_ids[change_index] == None:
-            change_index = random.randint(0, len(chromosome.node_ids) - 1)
+            change_index = random.randint(0, len(chromosome.node_ids))
         while True:
             new_node = random.choice(self.nodes)
             if chromosome.node_ids[change_index] == new_node.id:
@@ -258,7 +258,7 @@ class GeneticAlgorithm():
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
         while True:
-            change_index = random.randint(0, len(chromosome.node_ids) - 1)
+            change_index = random.randint(0, len(chromosome.node_ids))
             if chromosome.node_ids[change_index] == None:
                 continue
             else: 
