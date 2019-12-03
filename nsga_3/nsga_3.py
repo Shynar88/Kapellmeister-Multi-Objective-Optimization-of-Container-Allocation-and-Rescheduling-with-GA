@@ -118,6 +118,10 @@ def normalize(candidate_scores, nondom_scores):
     'maximum' points.
     '''
 
+    '''
+    TODO: solve singular matrix
+    '''
+
     ideal_point = np.min(candidate_scores, axis=0)
     weights = np.eye(candidate_scores.shape[1])
     weights[weights==0] = 1e6
@@ -182,7 +186,30 @@ def niche(ref_count,
     From the last front choose points which will be added
     to the next generation.
     TODO: clean up the code and fix bug with duplicates
+    TODO: fix argwhere bug
     '''
+
+    '''
+    Inputs:
+
+    ref_count - array of references to refpoints
+        index - ref point index
+        value - number of references to this ref point
+    assoc_table - array of associations between refpoints and solutions
+        index - index of a candidate
+        first column - index of associated refpoint
+        second colum - sitance to closest refpoint
+    points_to_choose_number - number of points we have to choose
+    candidates - indices of candidates
+    passing_number - number of candidates that already pass
+    '''
+
+    #print("ref_count", ref_count)
+    #print("assoc_table", assoc_table)
+    #print("points_to_choose_number", points_to_choose_number)
+    #print("candidates", candidates)
+    #print("passing_number", passing_number)
+
     last_front_assoc_table = assoc_table[passing_number:,:]
     new_population = candidates[:passing_number]
     enum_assoc_table = np.zeros((len(assoc_table), 3))
@@ -191,10 +218,16 @@ def niche(ref_count,
 
     k = 1
     while k <= points_to_choose_number:
+        #print('-------------')
+        #print('k', k)
         best_ref_points = np.argwhere(ref_count==np.min(ref_count)).T[0]
+        #print("best_ref_points", best_ref_points)
 
+        #np.random.seed(2)
         best_ref_point = np.random.choice(best_ref_points)
+        #print("best_ref_point", best_ref_point)
         last_front_best = np.argwhere(last_front_assoc_table[:,0]==best_ref_point).T[0] + passing_number
+        #print("last_front_best", last_front_best)
         if last_front_best.shape[0] != 0:
             if ref_count[best_ref_point] == 0:
                 last_front_bestest_index = np.argmin(enum_assoc_table[last_front_best,2])
@@ -203,6 +236,7 @@ def niche(ref_count,
             else:
                 new_population += [candidates[np.random.choice(last_front_best)]]
             ref_count[best_ref_point] += 1
+            last_front_assoc_table[last_front_best-passing_number, 0] = -1
             k+=1
         else:
             ref_count[best_ref_point] = 1e9
@@ -408,6 +442,19 @@ def nsga3(initial_coords, div):
     return new_population
 
 if __name__ == '__main__':
-    init = np.random.random_sample((200, 2))
-    print(nsga3(init, 10))
+    init = np.random.random_sample((400, 2))
+    '''
+    init = np.array([[0.59569499, 0.31358593],
+                     [0.56366967, 0.65501505],
+                     [0.78105185, 0.97405242],
+                     [0.99354687, 0.28393357],
+                     [0.12558175, 0.39013237],
+                     [0.84188729, 0.92402884],
+                     [0.26072347, 0.14465611],
+                     [0.54099401, 0.43406312],
+                     [0.4700722 , 0.19831488],
+                     [0.6077097 , 0.25905451]])
+    '''
+    print(init)
+    print(nsga3(init, 5))
 
