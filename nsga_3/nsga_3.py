@@ -203,13 +203,6 @@ def niche(ref_count,
     candidates - indices of candidates
     passing_number - number of candidates that already pass
     '''
-
-    #print("ref_count", ref_count)
-    #print("assoc_table", assoc_table)
-    #print("points_to_choose_number", points_to_choose_number)
-    #print("candidates", candidates)
-    #print("passing_number", passing_number)
-
     last_front_assoc_table = assoc_table[passing_number:,:]
     new_population = candidates[:passing_number]
     enum_assoc_table = np.zeros((len(assoc_table), 3))
@@ -218,16 +211,10 @@ def niche(ref_count,
 
     k = 1
     while k <= points_to_choose_number:
-        #print('-------------')
-        #print('k', k)
         best_ref_points = np.argwhere(ref_count==np.min(ref_count)).T[0]
-        #print("best_ref_points", best_ref_points)
 
-        #np.random.seed(2)
         best_ref_point = np.random.choice(best_ref_points)
-        #print("best_ref_point", best_ref_point)
         last_front_best = np.argwhere(last_front_assoc_table[:,0]==best_ref_point).T[0] + passing_number
-        #print("last_front_best", last_front_best)
         if last_front_best.shape[0] != 0:
             if ref_count[best_ref_point] == 0:
                 last_front_bestest_index = np.argmin(enum_assoc_table[last_front_best,2])
@@ -442,19 +429,35 @@ def nsga3(initial_coords, div):
     return new_population
 
 if __name__ == '__main__':
-    init = np.random.random_sample((400, 2))
-    '''
-    init = np.array([[0.59569499, 0.31358593],
-                     [0.56366967, 0.65501505],
-                     [0.78105185, 0.97405242],
-                     [0.99354687, 0.28393357],
-                     [0.12558175, 0.39013237],
-                     [0.84188729, 0.92402884],
-                     [0.26072347, 0.14465611],
-                     [0.54099401, 0.43406312],
-                     [0.4700722 , 0.19831488],
-                     [0.6077097 , 0.25905451]])
-    '''
-    print(init)
-    print(nsga3(init, 5))
+    ''' Test case 1 '''
+    np.random.seed(69)
+    init = np.random.random_sample((100, 2))
+    solution = nsga3(init, 5)
+    true_solution = [15, 26, 59, 81, 83, 32, 5, 75, 55, 88, 91, 28, 64, 31, 34, 46, 84, 25, 20, 73, 96, 52, 72, 87, 4, 50, 57, 78, 1, 45, 65, 0, 53, 56, 49, 68, 61, 35, 90, 38, 48, 76, 51, 58, 7, 16, 33, 94, 17, 67]
+    if solution != true_solution:
+        print('TEST 1 FAILED')
+    else:
+        print('PASS')
+
+    ''' Test case 2 '''
+    np.random.seed(1337)
+    init = np.random.random_sample((100, 2))
+    solution = nsga3(init, 5)
+    true_solution = [18, 26, 29, 44, 46, 52, 54, 91, 94, 33, 40, 42, 59, 86, 3, 6, 24, 99, 80, 25, 68, 74, 79, 15, 63, 8, 39, 78, 14, 28, 76, 34, 41, 53, 10, 47, 81, 89, 7, 90, 58, 72, 4, 32, 97, 50, 22, 30, 16, 88]
+    if solution != true_solution:
+        print('TEST 2 FAILED')
+    else:
+        print('PASS')
+
+    ''' Test case 3 '''
+    np.random.seed(42)
+    init = np.random.random_sample((200, 2))
+    solution = nsga3(init, 5)
+    true_solution = [17, 25, 120, 124, 130, 152, 183, 195, 136, 34, 27, 69, 123, 26, 162, 77, 113, 60, 98, 5, 0, 156, 56, 91, 128, 179,
+67, 70, 182, 191, 16, 197, 57, 63, 99, 96, 89, 121, 21, 101, 122, 109, 135, 175, 132, 59, 114, 52, 75, 95, 194, 199, 168, 40, 44, 140, 3, 82, 192, 157, 198, 36, 33, 37, 139, 93, 138, 31, 126, 146, 12, 78, 133, 1, 43, 46, 115, 6, 188, 189, 196, 4, 53, 160, 110, 47, 58, 154, 165, 163, 68, 105, 81, 19, 88, 35, 107, 148, 38, 108]
+    if solution != true_solution:
+        print('TEST 3 FAILED')
+    else:
+        print('PASS')
+
 
