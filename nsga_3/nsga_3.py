@@ -151,6 +151,7 @@ def normalize(candidate_scores, nondom_scores):
 
     return (candidate_scores - ideal_point)/intercepts, ideal_point, intercepts
 
+
 def associate(reference_points, normalized_candidate_scores, passing_number):
     '''
     Associates each candidate with a closest line generated
