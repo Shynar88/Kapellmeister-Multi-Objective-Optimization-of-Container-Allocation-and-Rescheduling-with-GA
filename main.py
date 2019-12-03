@@ -108,6 +108,8 @@ class Chromosome():
             node = nodes[node_id]
             i += 1
             v += abs(node.remaining_cpu/node.cpu_specified - node.remaining_memory/node.memory_specified)
+        if (i == 0):
+            return 0
         return 100*v/i
     def off_5(self):
         node_ids = self.node_ids
