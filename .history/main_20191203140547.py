@@ -316,7 +316,7 @@ class GeneticAlgorithm():
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
-    selected_indices = np.arange(0, int(pop_length/2))
+    selected_indices = np.arange(0, pop_length)
     return selected_indices
 
 

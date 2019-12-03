@@ -309,6 +309,7 @@ class GeneticAlgorithm():
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             selected_indices = nsga3_dummy(combined_population_coords, divisions)
+            print(selected_indices)
             population, best_front_indices = combined_population[selected_indices], selected_indices
 
         best_pareto_front = combined_population[best_front_indices]
@@ -316,7 +317,7 @@ class GeneticAlgorithm():
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
-    selected_indices = np.arange(0, int(pop_length/2))
+    selected_indices = np.arange(0, pop_length)
     return selected_indices
 
 

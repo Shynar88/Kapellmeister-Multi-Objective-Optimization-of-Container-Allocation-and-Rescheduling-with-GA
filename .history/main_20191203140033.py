@@ -213,7 +213,7 @@ class GeneticAlgorithm():
         if random.random() < self.mutation_rate:
             i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
             while chromosome.node_ids[i1] == None or chromosome.node_ids[i2] == None:
-                i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
+                i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)s
             # recalculating resources
             # TODO: swap only nodes
             chromosome.nodes_info[chromosome.node_ids[i1]].unassign_container(chromosome.containers[i1])
@@ -309,14 +309,14 @@ class GeneticAlgorithm():
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             selected_indices = nsga3_dummy(combined_population_coords, divisions)
-            population, best_front_indices = combined_population[selected_indices], selected_indices
+            population, best_front_indices = combined_population[selected_indices]
 
         best_pareto_front = combined_population[best_front_indices]
         return best_pareto_front
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
-    selected_indices = np.arange(0, int(pop_length/2))
+    selected_indices = np.arange(0, pop_length)
     return selected_indices
 
 
