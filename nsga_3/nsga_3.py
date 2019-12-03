@@ -137,8 +137,12 @@ def normalize(candidate_scores, nondom_scores):
     '''
     points = maximum - ideal_point
     b = np.ones(points.shape[1])
-    plane = np.linalg.solve(points, b)
-    intercepts = 1/plane
+    try:
+        plane = np.linalg.solve(points, b)
+        intercepts = 1/plane
+    except np.linalg.LinAlgError:
+        index = np.random.randint(len(points))
+        intercepts = points[index]
 
     return (candidate_scores - ideal_point)/intercepts, ideal_point, intercepts
 
@@ -186,10 +190,6 @@ def associate(reference_points, normalized_candidate_scores, passing_number):
 
     for i in range(passing_number):
         ref_count[np.int(sol_to_ref_assoc_table[i,0])] += 1
-
-    print('ref_to_sol_assoc_table', ref_to_sol_assoc_table)
-    print('sol_to_ref_assoc_table', sol_to_ref_assoc_table)
-    print('ref_to_last_assoc_table', ref_to_last_assoc_table)
 
     return ref_to_sol_assoc_table, sol_to_ref_assoc_table, ref_to_last_assoc_table, ref_count
 
@@ -266,13 +266,13 @@ def nsga3(initial_coords, div):
 
     popsize = initial_coords.shape[0]
     dim = initial_coords.shape[1]
-    #visualize_ranks(initial_coords, '1_initial.png')
+    visualize_ranks(initial_coords, '1_initial.png')
 
     '''
     Perform nondominated sort
     '''
     fronts, ranks = fast_non_dominated_sort(initial_coords)
-    #visualize_ranks(initial_coords, '2_ranked.png', ranks)
+    visualize_ranks(initial_coords, '2_ranked.png', ranks)
 
     '''
     Make a set of candidates that will compete for the
@@ -449,45 +449,11 @@ def nsga3(initial_coords, div):
 
 
 def main():
-    init = np.random.random_sample((10, 2))
-    solution = nsga3(init, 5)
-    print(solution)
-    return
-
-
-    ''' Test case 1 '''
-    np.random.seed(69)
-    init = np.random.random_sample((100, 2))
-    solution = nsga3(init, 5)
-    true_solution = [15, 26, 59, 81, 83, 32, 5, 75, 55, 88, 91, 28, 64, 31, 34, 46, 84, 25, 20, 73, 96, 52, 72, 87, 4, 50, 57, 78, 1, 45, 65, 0, 53, 56, 49, 68, 61, 35, 90, 38, 48, 76, 51, 58, 7, 16, 33, 94, 17, 67]
-    if solution != true_solution:
-        print('TEST 1 FAILED')
-    else:
-        print('PASS')
-
-    ''' Test case 2 '''
-    np.random.seed(1337)
-    init = np.random.random_sample((100, 2))
-    solution = nsga3(init, 5)
-    true_solution = [18, 26, 29, 44, 46, 52, 54, 91, 94, 33, 40, 42, 59, 86, 3, 6, 24, 99, 80, 25, 68, 74, 79, 15, 63, 8, 39, 78, 14, 28, 76, 34, 41, 53, 10, 47, 81, 89, 7, 90, 58, 72, 4, 32, 97, 50, 22, 30, 16, 88]
-    if solution != true_solution:
-        print('TEST 2 FAILED')
-    else:
-        print('PASS')
-
-    ''' Test case 3 '''
-    np.random.seed(42)
-    init = np.random.random_sample((200, 2))
-    solution = nsga3(init, 5)
-    true_solution = [17, 25, 120, 124, 130, 152, 183, 195, 136, 34, 27, 69, 123, 26, 162, 77, 113, 60, 98, 5, 0, 156, 56, 91, 128, 179,
-67, 70, 182, 191, 16, 197, 57, 63, 99, 96, 89, 121, 21, 101, 122, 109, 135, 175, 132, 59, 114, 52, 75, 95, 194, 199, 168, 40, 44, 140, 3, 82, 192, 157, 198, 36, 33, 37, 139, 93, 138, 31, 126, 146, 12, 78, 133, 1, 43, 46, 115, 6, 188, 189, 196, 4, 53, 160, 110, 47, 58, 154, 165, 163, 68, 105, 81, 19, 88, 35, 107, 148, 38, 108]
-    if solution != true_solution:
-        print('TEST 3 FAILED')
-    else:
-        print('PASS')
-
-
+    init = np.random.random_sample((400, 2))
+    solution = nsga3(init, 10)
 
 
 if __name__ == '__main__':
     main()
+
+
