@@ -6,7 +6,6 @@ import sys
 import copy
 import numpy as np
 import logging
-from nsga_3.nsga_3 import nsga3
 
 class Node():
     # {}_specified means initial capacity of the resource
@@ -107,10 +106,8 @@ class Chromosome():
                 continue
             node = nodes[node_id]
             i += 1
-            v += abs(node.remaining_cpu/node.cpu_specified - node.remaining_memory/node.memory_specified)
-        if (i == 0):
-            return 0
-        return 100*v/i
+            v += abs(node.remaining_cpu-node.remaining_memory)
+        return
     def off_5(self):
         node_ids = self.node_ids
         v = 0
@@ -307,35 +304,30 @@ class GeneticAlgorithm():
         #TODO NSGA III
         population = self.create_initial_population()
         number_of_objectives = 5
-        divisions = 2
+        divisions = 6
         for i in range(self.max_generations):
             new_population = self.generate_new_population(population)
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
-            print(combined_population_coords)
-            selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
-            population = np.array(combined_population)[selected_indices]
-            population = list(population)
-            write_log(population)
-        best_pareto_front = np.array(combined_population)[best_front_indices]
+            selected_indices = nsga3_dummy(combined_population_coords, divisions)
+            population, best_front_indices = combined_population[selected_indices], selected_indices
+
+        best_pareto_front = combined_population[best_front_indices]
         return best_pareto_front
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
     selected_indices = np.arange(0, int(pop_length/2))
-    best_front_indices = np.arange(0, int(pop_length/4))
-    return selected_indices, best_front_indices
+    return selected_indices
 
 # logging data
-def write_log(population):
+def write_log(elapsed_time, input):
+    LOG_FORMAT = "%(asctime)s - %(message)s"
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG)
+                        level = logging.DEBUG,
+                        format = LOG_FORMAT)
     logger = logging.getLogger()
-    #make logging every 100 generations
-    fintesses_list = []
-    for chromosome in population:
-        fintesses_list.append(chromosome.fitness)
-    logger.info("{}".format(' '.join(map(str, fintesses_list))))
+    logger.info((elapsed_time, input))
 
 # parses command line arguments
 def parse_arguments():

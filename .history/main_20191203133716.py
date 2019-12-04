@@ -5,8 +5,6 @@ import operator
 import sys
 import copy
 import numpy as np
-import logging
-from nsga_3.nsga_3 import nsga3
 
 class Node():
     # {}_specified means initial capacity of the resource
@@ -107,10 +105,8 @@ class Chromosome():
                 continue
             node = nodes[node_id]
             i += 1
-            v += abs(node.remaining_cpu/node.cpu_specified - node.remaining_memory/node.memory_specified)
-        if (i == 0):
-            return 0
-        return 100*v/i
+            v += abs(node.remaining_cpu-node.remaining_memory)
+        return
     def off_5(self):
         node_ids = self.node_ids
         v = 0
@@ -182,7 +178,7 @@ class GeneticAlgorithm():
 
     def crossover(self, p1, p2):  #p1 and p2 are of type Chromosome
         #TODO crossover
-        crossover_point = random.randint(1, len(p1.containers) - 1)
+        crossover_point = random.randint(1, len(p1.containers))
         rand_int = random.randint(0, 1)
         nodes_info = copy.deepcopy(self.nodes) # create nodes_info for future child
         if rand_int == 1:
@@ -202,7 +198,7 @@ class GeneticAlgorithm():
 
     def mutate(self, chromosome):  
         #TODO mutation
-        mutation_type = random.randint(0, 3)
+        mutation_type = random.randint(0, 4)
         if mutation_type == 0:
             return self.swap_mutation(chromosome)
         elif mutation_type == 1:
@@ -216,8 +212,6 @@ class GeneticAlgorithm():
         #TODO mutation type 0
         if random.random() < self.mutation_rate:
             i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
-            while chromosome.node_ids[i1] == None or chromosome.node_ids[i2] == None:
-                i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
             # recalculating resources
             # TODO: swap only nodes
             chromosome.nodes_info[chromosome.node_ids[i1]].unassign_container(chromosome.containers[i1])
@@ -233,9 +227,7 @@ class GeneticAlgorithm():
     
     def change_mutation(self, chromosome):
         #TODO mutation type 1
-        change_index = random.randint(0, len(chromosome.node_ids) - 1)
-        while chromosome.node_ids[change_index] == None:
-            change_index = random.randint(0, len(chromosome.node_ids) - 1)
+        change_index = random.randint(0, len(chromosome.node_ids))
         while True:
             new_node = random.choice(self.nodes)
             if chromosome.node_ids[change_index] == new_node.id:
@@ -264,7 +256,7 @@ class GeneticAlgorithm():
     def unassign_assigned_mutation(self, chromosome):
         #TODO mutation type 3
         while True:
-            change_index = random.randint(0, len(chromosome.node_ids) - 1)
+            change_index = random.randint(0, len(chromosome.node_ids))
             if chromosome.node_ids[change_index] == None:
                 continue
             else: 
@@ -307,35 +299,22 @@ class GeneticAlgorithm():
         #TODO NSGA III
         population = self.create_initial_population()
         number_of_objectives = 5
-        divisions = 2
+        divisions = 6
         for i in range(self.max_generations):
             new_population = self.generate_new_population(population)
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
-            print(combined_population_coords)
-            selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
-            population = np.array(combined_population)[selected_indices]
-            population = list(population)
-            write_log(population)
-        best_pareto_front = np.array(combined_population)[best_front_indices]
+            selected_indices = nsga3_dummy(combined_population_coords, divisions)
+            population, best_front_indices = combined_population[selected_indices]
+
+        best_pareto_front = combined_population[best_front_indices]
         return best_pareto_front
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
-    selected_indices = np.arange(0, int(pop_length/2))
-    best_front_indices = np.arange(0, int(pop_length/4))
-    return selected_indices, best_front_indices
+    selected_indices = np.arange(0, pop_length)
+    return selected_indices
 
-# logging data
-def write_log(population):
-    logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG)
-    logger = logging.getLogger()
-    #make logging every 100 generations
-    fintesses_list = []
-    for chromosome in population:
-        fintesses_list.append(chromosome.fitness)
-    logger.info("{}".format(' '.join(map(str, fintesses_list))))
 
 # parses command line arguments
 def parse_arguments():
