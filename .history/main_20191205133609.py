@@ -73,7 +73,6 @@ class Chromosome():
                 t+=i
             v += t
         return v
-
     def off_2(self):
         v =0
         nodes = self.nodes_info
@@ -89,7 +88,6 @@ class Chromosome():
                 n = dic[key]
                 v += (n+1)*n/2
         return v
-
     def off_3(self):
         v = 0
         nodes = self.nodes_info
@@ -99,7 +97,6 @@ class Chromosome():
             p = (node.max_power - node.idle_power)* (c+m)/2 + node.idle_power
         v += p
         return v
-
     def off_4(self):
         v = 0
         i = 0
@@ -114,7 +111,6 @@ class Chromosome():
         if (i == 0):
             return 0
         return 100*v/i
-        
     def off_5(self):
         node_ids = self.node_ids
         v = 0
@@ -219,9 +215,7 @@ class GeneticAlgorithm():
     def swap_mutation(self, chromosome):
         #TODO mutation type 0
         if random.random() < self.mutation_rate:
-            none_count = chromosome.node_ids.count(None)
-            if none_count > len(chromosome.node_ids) - 2:
-                return chromosome
+            #need to get list of indices where noed_id is not None 
             i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
             while chromosome.node_ids[i1] == None or chromosome.node_ids[i2] == None:
                 i1, i2 = random.sample(range(len(chromosome.node_ids)), 2)
@@ -323,7 +317,7 @@ class GeneticAlgorithm():
             selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
-            #write_log(population)
+            write_log(population)
         best_pareto_front = np.array(combined_population)[best_front_indices]
         return best_pareto_front
 

@@ -73,7 +73,6 @@ class Chromosome():
                 t+=i
             v += t
         return v
-
     def off_2(self):
         v =0
         nodes = self.nodes_info
@@ -89,7 +88,6 @@ class Chromosome():
                 n = dic[key]
                 v += (n+1)*n/2
         return v
-
     def off_3(self):
         v = 0
         nodes = self.nodes_info
@@ -99,7 +97,6 @@ class Chromosome():
             p = (node.max_power - node.idle_power)* (c+m)/2 + node.idle_power
         v += p
         return v
-
     def off_4(self):
         v = 0
         i = 0
@@ -114,7 +111,6 @@ class Chromosome():
         if (i == 0):
             return 0
         return 100*v/i
-        
     def off_5(self):
         node_ids = self.node_ids
         v = 0
