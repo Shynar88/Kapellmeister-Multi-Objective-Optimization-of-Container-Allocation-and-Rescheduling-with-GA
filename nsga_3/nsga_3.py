@@ -291,7 +291,7 @@ def nsga3(initial_coords, div):
             candidates = candidates + f
             candidates_number += len(f)
         elif candidates_number + len(f) == cutoff_number:
-            return candidates + f
+            return candidates + f, fronts[0]
         else:
             passing_number = len(candidates)
             points_to_choose_number = cutoff_number - passing_number
