@@ -331,13 +331,17 @@ def nsga3_dummy(population_coords, divisions):
 # logging data
 def write_log(population):
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG)
+                        level = logging.DEBUG,
+                        format='%(message)s')
     logger = logging.getLogger()
+    
     #make logging every 100 generations
     fintesses_list = []
     for chromosome in population:
         fintesses_list.append(chromosome.fitness)
-    logger.info("{}".format(' '.join(map(str, fintesses_list))))
+    # logger.info("{}".format(' '.join(map(str, fintesses_list))))
+    logger.info("{}".format(fintesses_list))
+
 
 # parses command line arguments
 def parse_arguments():
