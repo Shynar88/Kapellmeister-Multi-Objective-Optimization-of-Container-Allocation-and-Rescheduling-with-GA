@@ -73,7 +73,6 @@ class Chromosome():
                 t+=i
             v += t
         return v
-
     def off_2(self):
         v =0
         nodes = self.nodes_info
@@ -89,7 +88,6 @@ class Chromosome():
                 n = dic[key]
                 v += (n+1)*n/2
         return v
-
     def off_3(self):
         v = 0
         nodes = self.nodes_info
@@ -99,7 +97,6 @@ class Chromosome():
             p = (node.max_power - node.idle_power)* (c+m)/2 + node.idle_power
         v += p
         return v
-
     def off_4(self):
         v = 0
         i = 0
@@ -114,7 +111,6 @@ class Chromosome():
         if (i == 0):
             return 0
         return 100*v/i
-        
     def off_5(self):
         node_ids = self.node_ids
         v = 0
@@ -125,7 +121,7 @@ class Chromosome():
         return v
 
 class GeneticAlgorithm():
-    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers):
+    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num):
         self.population_size = population_size
         self.mat_pool_size = mat_pool_size
         self.tournament_size = tournament_size
@@ -134,10 +130,8 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate 
         self.nodes_num = nodes_num
         self.containers_num = containers_num
-        self.nodes=nodes
-        self.containers=containers
-        #self.nodes = self.create_nodes()
-        #self.containers = self.create_containers()
+        self.nodes = self.create_nodes()
+        self.containers = self.create_containers()
 
     def create_nodes(self):
         # in Table 6 there are different settings on number of nodes and their specifications
@@ -322,10 +316,10 @@ class GeneticAlgorithm():
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             print(combined_population_coords)
-            selected_indices, best_front_indices = nsga3_dummy(combined_population_coords * (-1), divisions)
+            selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
-            write_log(population)
+            #write_log(population)
         best_pareto_front = np.array(combined_population)[best_front_indices]
         return best_pareto_front
 
@@ -338,16 +332,13 @@ def nsga3_dummy(population_coords, divisions):
 # logging data
 def write_log(population):
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG,
-                        format='%(message)s')
+                        level = logging.DEBUG)
     logger = logging.getLogger()
-    
     #make logging every 100 generations
     fintesses_list = []
     for chromosome in population:
         fintesses_list.append(chromosome.fitness)
-    # logger.info("{}".format(' '.join(map(str, fintesses_list))))
-    logger.info("{}".format(fintesses_list))
+    logger.info("{}".format(' '.join(map(str, fintesses_list))))
 
 # parses command line arguments
 def parse_arguments():
