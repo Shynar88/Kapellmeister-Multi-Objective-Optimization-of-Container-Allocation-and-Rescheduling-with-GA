@@ -343,9 +343,11 @@ def nsga3_dummy(population_coords, divisions):
 # logging data
 def write_log(population):
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG,
+                        filemode = 'w+', 
+                        level = logging.INFO,
                         format='%(message)s')
     logger = logging.getLogger()
+    logging.FileHandler(logger.name + '-fitness.log', mode='w+')
     #make logging every 100 generations
     fintesses_list = []
     for chromosome in population:
@@ -359,7 +361,7 @@ def parse_arguments():
     parser.add_argument('-ms', type=int, default=25, help="mating pool size") #106
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
     parser.add_argument('-e', type=int, default=25, help="elite_size")
-    parser.add_argument('-mg', type=int, default=30, help="max generations") #1000
+    parser.add_argument('-mg', type=int, default=29, help="max generations") #1000
     parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
     parser.add_argument('-nn', type=int, default=5, help="nodes number") 
     parser.add_argument('-cn', type=int, default=8, help="containers number")
