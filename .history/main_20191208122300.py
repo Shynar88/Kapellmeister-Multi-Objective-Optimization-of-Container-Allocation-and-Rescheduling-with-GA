@@ -336,8 +336,7 @@ def nsga3_dummy(population_coords, divisions):
 # logging data
 def write_log(population):
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG,
-                        format='%(message)s')
+                        level = logging.DEBUG)
     logger = logging.getLogger()
     #make logging every 100 generations
     fintesses_list = []

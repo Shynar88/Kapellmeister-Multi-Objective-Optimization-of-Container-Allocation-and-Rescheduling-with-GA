@@ -323,7 +323,7 @@ class GeneticAlgorithm():
             selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
-            write_log(population)
+            #write_log(population)
         best_pareto_front = np.array(combined_population)[best_front_indices]
         return best_pareto_front
 
@@ -336,8 +336,7 @@ def nsga3_dummy(population_coords, divisions):
 # logging data
 def write_log(population):
     logging.basicConfig(filename = "fitness.log",
-                        level = logging.DEBUG,
-                        format='%(message)s')
+                        level = logging.DEBUG)
     logger = logging.getLogger()
     #make logging every 100 generations
     fintesses_list = []
