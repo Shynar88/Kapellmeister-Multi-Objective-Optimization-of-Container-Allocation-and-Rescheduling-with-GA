@@ -321,12 +321,13 @@ class GeneticAlgorithm():
         population = self.create_initial_population()
         number_of_objectives = 5
         divisions = 2
+        extreme_points = None
         for i in range(self.max_generations):
             new_population = self.generate_new_population(population)
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             print(combined_population_coords)
-            selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
+            selected_indices, best_front_indices, extreme_points = nsga3(combined_population_coords * (-1), divisions, extreme_points)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
             write_log(population)
