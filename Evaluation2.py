@@ -3,6 +3,7 @@ import kubernetes
 import nsga_3
 import visualise
 import numpy as np
+from ast import literal_eval
 
 class Experiment:
     def __init__(self,node_cpu,node_mem,per_type,service_cpu,service_mem,total_services,service_cpu_low,service_cpu_high,service_mem_low,service_mem_high):
@@ -117,7 +118,7 @@ def get_kub_allocations(nodes,containers):
 def get_nsga_allocations(nodes,containers):
     #population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num = main.parse_arguments()
     #ga = main.GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num,nodes,containers)
-    genalg=ga.GeneticAlgorithm(300,150,7,30,100,0.3,5,8,nodes,containers) #used default values
+    genalg=ga.GeneticAlgorithm(300,150,7,30,5,0.3,5,8,nodes,containers) #used default values
     front=genalg.generate_solution()
     return select_from_front(front)
 
@@ -191,7 +192,7 @@ def main():
     Exp_3=Experiment(cpu_M5a,mem_M5a,per_type_M5a,[],[],400,2,4,200,4000)
     Exp_4=Experiment(cpu_M5a,mem_M5a,per_type_M5a,[],[],100,0,1,25,1000)
     
-    Experiments=[Exp_1, Exp_2, Exp_3, Exp_4]
+    Experiments=[Exp_1] #[Exp_1, Exp_2, Exp_3, Exp_4]
     for experiment in Experiments:
         
         (nodes_kub,nodes_ga)=experiment.make_nodes() #list of nodes of Node class
@@ -211,6 +212,30 @@ def main():
         kub=[fa,fb,fc,fd,fe]
         nsga=[f1,f2,f3,f4,f5]
         visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
+    
+    def parse_log_data():
+        list_of_population_fitnesses = []
+        for line in open("fitness.log", "r"):
+            population_fitnesses = literal_eval(line)
+            print(len(population_fitnesses))
+            list_of_population_fitnesses.append(population_fitnesses)
+        print(len(list_of_population_fitnesses))
+        return list_of_population_fitnesses
+    log = parse_log_data()
+    
+    for i in range(len(log)):
+        obj_1=[]
+        obj_2=[]
+        obj_3=[]
+        obj_4=[]
+        obj_5=[]
+        for j in range(5):
+            obj_1.append(log[i][0])
+            obj_2.append(log[i][1])
+            obj_3.append(log[i][2])
+            obj_4.append(log[i][3])    
+            obj_5.append(log[i][4])
+        visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Title")
     
 if __name__ == "__main__":
     main()
