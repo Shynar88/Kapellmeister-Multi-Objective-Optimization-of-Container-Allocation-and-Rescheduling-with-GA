@@ -3,3 +3,5 @@ __pycache__
 fitness\.log
 *\.png
 \.ipynb_checkpoints
+root-fitness.log
+\.vscode
