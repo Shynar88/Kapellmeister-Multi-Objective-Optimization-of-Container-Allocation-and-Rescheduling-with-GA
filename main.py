@@ -125,7 +125,7 @@ class Chromosome():
         return v
 
 class GeneticAlgorithm():
-    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num):
+    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers):
         self.population_size = population_size
         self.mat_pool_size = mat_pool_size
         self.tournament_size = tournament_size
@@ -134,8 +134,10 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate 
         self.nodes_num = nodes_num
         self.containers_num = containers_num
-        self.nodes = self.create_nodes()
-        self.containers = self.create_containers()
+        self.nodes=nodes
+        self.containers=containers
+        #self.nodes = self.create_nodes()
+        #self.containers = self.create_containers()
 
     def create_nodes(self):
         # in Table 6 there are different settings on number of nodes and their specifications

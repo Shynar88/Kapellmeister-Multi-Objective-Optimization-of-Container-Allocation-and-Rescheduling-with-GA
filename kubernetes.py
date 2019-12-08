@@ -12,10 +12,12 @@ class Node:
         self.idle_power = idle_power
     def __repr__(self):
         return "Node_" + str(self.id)
+    def get_containers_list(self):
+        return self.containers_list
     def allocate(self, container):
         self.containers_list.append(container)
-        assert (container.cpu <= self.remaining_cpu),"CPU limit exceeded"
-        assert (container.mem <= self.remaining_memory),"Memory limit exceeded"
+        assert (container.required_cpu <= self.remaining_cpu),"CPU limit exceeded"
+        assert (container.required_memory <= self.remaining_memory),"Memory limit exceeded"
         self.remaining_cpu -= container.required_cpu
         self.remaining_memory -= container.required_memory
     def deallocate(self, container):
@@ -46,21 +48,21 @@ def pod_fits_resources(nodes, container):
     fit_nodes = []
     for n in nodes:
         if n.cpu_specified >= n.remaining_cpu - container.required_cpu \
-            and n.memory_specified >= n.remaining_memory - container.remaining_memory:
+            and n.memory_specified >= n.remaining_memory - container.required_memory:
             fit_nodes.append(n)
     return fit_nodes
 def least_request_priority(nodes, container):
     best_score = 0
-    best_canbdidate = None
+    best_candidate = None
     fit_nodes = pod_fits_resources(nodes, container)
     for n in fit_nodes:
-        free_cpu_frac = max(n.remaining_cpu - container.cpu, 0)/n.cpu_specified
-        free_mem_frac = max(n.remaining_memory- container.mem, 0)/n.memory_specified
+        free_cpu_frac = max(n.remaining_cpu - container.required_cpu, 0)/n.cpu_specified
+        free_mem_frac = max(n.remaining_memory- container.required_memory, 0)/n.memory_specified
         score = (free_cpu_frac + free_mem_frac)/2
         if score > best_score:
             best_score = score
             best_candidate = n
-    return n
+    return best_candidate
 
 # def main():
 #     # n1 = Node(4,16000,1,"",[])
