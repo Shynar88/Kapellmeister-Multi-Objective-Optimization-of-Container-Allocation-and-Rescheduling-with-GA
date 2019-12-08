@@ -50,7 +50,7 @@ class Chromosome():
         #TODO Power efficient
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
-        return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
+        return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5(), self.off_6(init_chromosome))
 
     # the higher the score, the more infeasable solution is
     # 0 means solution is feasable
@@ -123,6 +123,19 @@ class Chromosome():
                 v += 1
                 continue
         return v
+    
+    def off_6(self, init_chromosome):
+        node_ids = self.node_ids
+        init_node_ids = init_chromosome.node_ids
+        i = 0
+        v = 0
+        for node_id in node_ids:
+            if (node_id != init_chromosome[i]):
+                i +=1
+                continue
+            v += 1
+            i += 1
+        return v 
 
 class GeneticAlgorithm():
     def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers):
