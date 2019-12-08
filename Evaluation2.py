@@ -223,18 +223,18 @@ def main():
         return list_of_population_fitnesses
     log = parse_log_data()
     
-    for i in range(len(log)):
+    for i in range(len(log)): #for each generation
         obj_1=[]
         obj_2=[]
         obj_3=[]
         obj_4=[]
         obj_5=[]
-        for j in range(5):
-            obj_1.append(log[i][0])
-            obj_2.append(log[i][1])
-            obj_3.append(log[i][2])
-            obj_4.append(log[i][3])    
-            obj_5.append(log[i][4])
+        for j in range(len(log[0])): 
+            obj_1.append(log[i][j][0])
+            obj_2.append(log[i][j][1])
+            obj_3.append(log[i][j][2])
+            obj_4.append(log[i][j][3])    
+            obj_5.append(log[i][j][4])
         visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Title")
     
 if __name__ == "__main__":
