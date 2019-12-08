@@ -358,7 +358,7 @@ def parse_arguments():
     parser.add_argument('-ms', type=int, default=25, help="mating pool size") #106
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
     parser.add_argument('-e', type=int, default=25, help="elite_size")
-    parser.add_argument('-mg', type=int, default=30, help="max generations") #1000
+    parser.add_argument('-mg', type=int, default=20, help="max generations") #1000
     parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
     parser.add_argument('-nn', type=int, default=5, help="nodes number") 
     parser.add_argument('-cn', type=int, default=8, help="containers number")

@@ -349,16 +349,17 @@ def write_log(population):
     fintesses_list = []
     for chromosome in population:
         fintesses_list.append(chromosome.fitness)
+    # logger.info("{}".format(' '.join(map(str, fintesses_list))))
     logger.info("{}".format(fintesses_list))
 
 # parses command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', type=int, default=50, help="population size") #212
-    parser.add_argument('-ms', type=int, default=25, help="mating pool size") #106
+    parser.add_argument('-s', type=int, default=300, help="population size") #212
+    parser.add_argument('-ms', type=int, default=150, help="mating pool size") #106
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
-    parser.add_argument('-e', type=int, default=25, help="elite_size")
-    parser.add_argument('-mg', type=int, default=30, help="max generations") #1000
+    parser.add_argument('-e', type=int, default=30, help="elite_size")
+    parser.add_argument('-mg', type=int, default=50, help="max generations") #1000
     parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
     parser.add_argument('-nn', type=int, default=5, help="nodes number") 
     parser.add_argument('-cn', type=int, default=8, help="containers number")

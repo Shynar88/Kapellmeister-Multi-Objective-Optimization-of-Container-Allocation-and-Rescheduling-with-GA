@@ -321,6 +321,7 @@ class GeneticAlgorithm():
         population = self.create_initial_population()
         number_of_objectives = 5
         divisions = 2
+        c = 0 
         for i in range(self.max_generations):
             new_population = self.generate_new_population(population)
             combined_population = population + new_population
@@ -329,7 +330,10 @@ class GeneticAlgorithm():
             selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
-            write_log(population)
+            if c == 10:
+                write_log(population)
+                c = 0
+            c += 1
         best_pareto_front = np.array(combined_population)[best_front_indices]
         return best_pareto_front
 
@@ -354,11 +358,11 @@ def write_log(population):
 # parses command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', type=int, default=50, help="population size") #212
-    parser.add_argument('-ms', type=int, default=25, help="mating pool size") #106
+    parser.add_argument('-s', type=int, default=300, help="population size") #212
+    parser.add_argument('-ms', type=int, default=150, help="mating pool size") #106
     parser.add_argument('-ts', type=int, default=7, help="tournament size")
-    parser.add_argument('-e', type=int, default=25, help="elite_size")
-    parser.add_argument('-mg', type=int, default=30, help="max generations") #1000
+    parser.add_argument('-e', type=int, default=30, help="elite_size")
+    parser.add_argument('-mg', type=int, default=50, help="max generations") #1000
     parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
     parser.add_argument('-nn', type=int, default=5, help="nodes number") 
     parser.add_argument('-cn', type=int, default=8, help="containers number")
