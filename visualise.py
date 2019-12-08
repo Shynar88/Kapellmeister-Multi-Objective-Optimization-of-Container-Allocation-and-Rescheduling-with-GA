@@ -25,7 +25,7 @@ for i in range(5):
 obj_over_configs(a,kub,nsga,"network distance","250 machines")
 """
 def optimal_front_at_gen(x_obj,y_obj,x_obj_name,y_obj_name,title):
-    plt.scatter(x_obj,y_obj)
+    plt.scatter(x_obj,y_obj,s=8)
     plt.xlabel(x_obj_name)
     plt.ylabel(y_obj_name)
     plt.title(title)

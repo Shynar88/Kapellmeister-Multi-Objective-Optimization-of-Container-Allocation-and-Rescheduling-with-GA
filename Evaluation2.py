@@ -118,7 +118,7 @@ def get_kub_allocations(nodes,containers):
 def get_nsga_allocations(nodes,containers):
     #population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num = main.parse_arguments()
     #ga = main.GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num,nodes,containers)
-    genalg=ga.GeneticAlgorithm(300,150,7,30,5,0.3,5,8,nodes,containers) #used default values
+    genalg=ga.GeneticAlgorithm(300,150,7,30,10,0.3,5,8,nodes,containers) #used default values
     front=genalg.generate_solution()
     return select_from_front(front)
 
@@ -163,6 +163,15 @@ def find_assigned(nodes):
             node_ids.append(nodes[i].id)
     return node_ids
 
+def parse_log_data():
+        list_of_population_fitnesses = []
+        for line in open("fitness.log", "r"):
+            population_fitnesses = literal_eval(line)
+            print(len(population_fitnesses))
+            list_of_population_fitnesses.append(population_fitnesses)
+        print(len(list_of_population_fitnesses))
+        return list_of_population_fitnesses
+
 def main():
     #1)make physical configs
     #2)decide workload
@@ -198,7 +207,6 @@ def main():
         (nodes_kub,nodes_ga)=experiment.make_nodes() #list of nodes of Node class
         (containers_kub,containers_ga)=experiment.make_containers() #list of containers of Container class
         
-        
         kub_alloc=get_kub_allocations(nodes_kub,containers_kub) 
         chr=ga.Chromosome(find_assigned(kub_alloc),containers_kub,kub_alloc)
         (fa,fb,fc,fd,fe)=chr.get_fitness()
@@ -207,21 +215,13 @@ def main():
         nsga_alloc=get_nsga_allocations(nodes_ga,containers_ga) 
         (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness()
         print(f1,f2,f3,f4,f5)    
-
+        log = parse_log_data()
+        
         x_names=['Obj1','Obj2','Obj3','Obj4','Obj5']
         kub=[fa,fb,fc,fd,fe]
         nsga=[f1,f2,f3,f4,f5]
         visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
     
-    def parse_log_data():
-        list_of_population_fitnesses = []
-        for line in open("fitness.log", "r"):
-            population_fitnesses = literal_eval(line)
-            print(len(population_fitnesses))
-            list_of_population_fitnesses.append(population_fitnesses)
-        print(len(list_of_population_fitnesses))
-        return list_of_population_fitnesses
-    log = parse_log_data()
     
     for i in range(len(log)): #for each generation
         obj_1=[]
@@ -229,13 +229,13 @@ def main():
         obj_3=[]
         obj_4=[]
         obj_5=[]
-        for j in range(len(log[0])): 
+        for j in range(300): 
             obj_1.append(log[i][j][0])
             obj_2.append(log[i][j][1])
             obj_3.append(log[i][j][2])
             obj_4.append(log[i][j][3])    
             obj_5.append(log[i][j][4])
-        visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Title")
+        visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Generation "+str(i+1))
     
 if __name__ == "__main__":
     main()
