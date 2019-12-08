@@ -315,7 +315,7 @@ class GeneticAlgorithm():
             combined_population = population + new_population
             combined_population_coords = np.array([p.fitness for p in combined_population])
             print(combined_population_coords)
-            selected_indices, best_front_indices = nsga3(combined_population_coords * (-1), divisions)
+            selected_indices, best_front_indices = nsga3_dummy(combined_population_coords * (-1), divisions)
             population = np.array(combined_population)[selected_indices]
             population = list(population)
             write_log(population)
