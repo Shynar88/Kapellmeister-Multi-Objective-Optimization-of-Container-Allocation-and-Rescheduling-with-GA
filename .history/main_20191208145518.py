@@ -37,12 +37,10 @@ class Container():
         self.task_type = task_type
 
 class Chromosome():
-    def __init__(self, node_ids, containers, nodes_info, rescheduling, initial_placement):
+    def __init__(self, node_ids, containers, nodes_info):
         self.node_ids = node_ids #node ids
         self.containers = containers
         self.nodes_info = nodes_info #for tracking the resource usage per chromosome 
-        self.rescheduling = rescheduling 
-        self.initial_placement = initial_placement
         self.fitness = self.get_fitness()
 
     def get_fitness(self):
@@ -52,12 +50,8 @@ class Chromosome():
         #TODO Power efficient
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
-        if self.rescheduling and self.initial_placement == None: #the corner case when initial placement chromosome is created
-            return None
-        if self.rescheduling:
-            return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5(), self.off_6(self.initial_placement))
-        else:
-            return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
+        return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
+
     # the higher the score, the more infeasable solution is
     # 0 means solution is feasable
     # The number of constraint violations is computed by counting the number of nodes that host containers more than its computational capabilities (CPU or memory).
@@ -129,23 +123,9 @@ class Chromosome():
                 v += 1
                 continue
         return v
-    
-    def off_6(self, init_chromosome):
-        node_ids = self.node_ids
-        init_node_ids = init_chromosome.node_ids
-        i = 0
-        v = 0
-        for node_id in node_ids:
-            if (node_id != init_chromosome[i]):
-                i +=1
-                continue
-            v += 1
-            i += 1
-        return v 
 
 class GeneticAlgorithm():
-    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, initial_placement):
-    # def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers, rescheduling, initial_placement):
+    def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num):
         self.population_size = population_size
         self.mat_pool_size = mat_pool_size
         self.tournament_size = tournament_size
@@ -154,10 +134,6 @@ class GeneticAlgorithm():
         self.mutation_rate = mutation_rate 
         self.nodes_num = nodes_num
         self.containers_num = containers_num
-        # self.nodes = nodes
-        # self.containers = containers
-        self.rescheduling = rescheduling
-        self.initial_placement = initial_placement
         self.nodes = self.create_nodes()
         self.containers = self.create_containers()
 
@@ -198,7 +174,7 @@ class GeneticAlgorithm():
                 node_selected.assign_container(containers[i])
             else:
                 node_ids.append(None)
-        chromosome = Chromosome(node_ids, containers, nodes_info, self.rescheduling, self.initial_placement)
+        chromosome = Chromosome(node_ids, containers, nodes_info)
         return chromosome
 
     def create_initial_population(self):
@@ -225,7 +201,7 @@ class GeneticAlgorithm():
         for (node_id, container) in zip(node_ids, containers):
             if node_id != None:
                 nodes_info[node_id].assign_container(container)
-        chromosome = Chromosome(node_ids, containers, nodes_info, self.rescheduling, self.initial_placement)
+        chromosome = Chromosome(node_ids, containers, nodes_info)
         return chromosome
 
     def mutate(self, chromosome):  
@@ -389,60 +365,12 @@ def parse_arguments():
     parser.add_argument('-mr', type=float, default=0.3, help="mutation rate") #0.3
     parser.add_argument('-nn', type=int, default=5, help="nodes number") 
     parser.add_argument('-cn', type=int, default=8, help="containers number")
-    parser.add_argument('-rsch', type=bool, default=False, help="rescheduling")
     args = parser.parse_args()
-    return args.s, args.ms, args.ts, args.e, args.mg, args.mr, args.nn, args.cn, args.rsch
-
-def create_nodes():
-        # in Table 6 there are different settings on number of nodes and their specifications
-        nodes_list = []
-        cpu_specified = 4  #according to paper
-        memory_specified = 4000 #according to paper
-        max_power = 160 
-        idle_power = 80
-        for i in range(8):
-            node = Node(cpu_specified, memory_specified, i, max_power, idle_power)
-            nodes_list.append(node)
-        return nodes_list
-    
-def create_containers():
-    # in Table 6 there are different settings on number of containers and their specifications
-    containers_list = []
-    cpu_required = 2
-    memory_required = 200
-    task_type = "A"
-    for _ in range(10):
-        container = Container(cpu_required, memory_required, task_type)
-        containers_list.append(container)
-    return containers_list
-        
-def generate_initial_placement():
-        #size of the chromosome is equal to the number of containers
-        #initial solution, is generated by assigning each container to a random node.
-        #each chromosome should have deepcopy of resources 
-        containers = create_containers()
-        nodes_info = create_nodes()
-        node_ids = []
-        for i in range(len(containers)):
-            if random.random() < 0.9: #with 90% probability assign conainer to node, not specified in paper
-                node_selected = random.choice(nodes_info) # the node should be passed by reference for keeping track of resources
-                node_ids.append(node_selected.id)
-                node_selected.assign_container(containers[i])
-            else:
-                node_ids.append(None)
-        chromosome = Chromosome(node_ids, containers, nodes_info, True, None)
-        return chromosome
+    return args.s, args.ms, args.ts, args.e, args.mg, args.mr, args.nn, args.cn
 
 def main():
-    population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling = parse_arguments()
-    ###############################
-    # To change: the chromosome should be the initial setting for rescheduling 
-    ###############################
-    if rescheduling:
-        init_placement = generate_initial_placement()
-    else:
-        init_placement = None
-    gen_algo = GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, init_placement)
+    population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num = parse_arguments()
+    gen_algo = GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num)
     solution = gen_algo.generate_solution()
 
 if __name__ == "__main__":

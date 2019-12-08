@@ -43,19 +43,19 @@ class Chromosome():
         self.nodes_info = nodes_info #for tracking the resource usage per chromosome 
         self.rescheduling = rescheduling 
         self.initial_placement = initial_placement
-        self.fitness = self.get_fitness()
+        self.fitness = self.get_fitness(initial_placement)
 
-    def get_fitness(self):
+    def get_fitness(self, init_chromosome):
         #TODO get fitness, implement 5 objective fitness evalutaion:
         #TODO Equal task distribution
         #TODO Availability
         #TODO Power efficient
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
-        if self.rescheduling and self.initial_placement == None: #the corner case when initial placement chromosome is created
+        if init_chromosome == None: #the corner case when initial placement chromosome is created
             return None
         if self.rescheduling:
-            return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5(), self.off_6(self.initial_placement))
+            return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5(), self.off_6(init_chromosome))
         else:
             return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5())
     # the higher the score, the more infeasable solution is
@@ -145,7 +145,6 @@ class Chromosome():
 
 class GeneticAlgorithm():
     def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, initial_placement):
-    # def __init__(self, population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers, rescheduling, initial_placement):
         self.population_size = population_size
         self.mat_pool_size = mat_pool_size
         self.tournament_size = tournament_size
@@ -157,7 +156,7 @@ class GeneticAlgorithm():
         # self.nodes = nodes
         # self.containers = containers
         self.rescheduling = rescheduling
-        self.initial_placement = initial_placement
+        self.initital_placement = initial_placement
         self.nodes = self.create_nodes()
         self.containers = self.create_containers()
 
@@ -443,6 +442,7 @@ def main():
     else:
         init_placement = None
     gen_algo = GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, init_placement)
+                                population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, nodes, containers, rescheduling, initial_placement
     solution = gen_algo.generate_solution()
 
 if __name__ == "__main__":

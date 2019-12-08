@@ -52,7 +52,7 @@ class Chromosome():
         #TODO Power efficient
         #TODO Resources utilization balancing
         #TODO Unassigned tasks reduction
-        if self.rescheduling and self.initial_placement == None: #the corner case when initial placement chromosome is created
+        if self.initial_placement == None: #the corner case when initial placement chromosome is created
             return None
         if self.rescheduling:
             return (self.off_1(), self.off_2(), self.off_3(), self.off_4(), self.off_5(), self.off_6(self.initial_placement))
