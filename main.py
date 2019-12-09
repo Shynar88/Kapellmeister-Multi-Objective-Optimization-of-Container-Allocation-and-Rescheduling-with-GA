@@ -6,7 +6,66 @@ import sys
 import copy
 import numpy as np
 import logging
-from nsga_3.nsga_3 import nsga3
+
+from pymoo.model.problem import Problem
+from pymoo.model.sampling import Sampling
+from pymoo.model.crossover import Crossover
+from pymoo.model.mutation import Mutation
+
+from pymoo.algorithms.nsga3 import NSGA3
+from pymoo.optimize import minimize
+from pymoo.factory import get_reference_directions
+
+class DockProblem(Problem):
+
+    def __init__(self, docker_problem):
+        super().__init__(n_var=1, n_obj=5, n_constr=0, elementwise_evaluation=True)
+        self.docker_problem = docker_problem
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        out["F"] = np.array(x[0].get_fitness(), dtype=np.float)
+
+class DockSampling(Sampling):
+
+    def _do(self, problem, n_samples, **kwargs):
+        X = problem.docker_problem.create_initial_population()
+        X = np.reshape(X, (problem.docker_problem.population_size,1))
+        return X
+
+class DockCrossover(Crossover):
+
+    def __init__(self):
+        super().__init__(2,1)
+
+    def _do(self, problem, X, **kwargs):
+        _, n_matings, n_var = X.shape
+        Y = np.full((1, n_matings, n_var), None, dtype=np.object)
+        for k in range(n_matings):
+            a, b = X[0, k, 0], X[1, k, 0]
+            Y[0, k, 0] = problem.docker_problem.crossover(a,b)
+        return Y
+
+
+class DockMutation(Mutation):
+
+    def __init__(self):
+        super().__init__()
+
+    def _do(self, problem, X, **kwargs):
+        for i in range(len(X)):
+            X[i, 0] = problem.docker_problem.mutate(X[i, 0])
+        return X
+
+
+def func_is_duplicate(pop, *other, **kwargs):
+    if len(other) == 0:
+        return np.full(len(pop), False)
+
+    # value to finally return
+    is_duplicate = np.full(len(pop), False)
+
+    return is_duplicate
+
 
 class Node():
     # {}_specified means initial capacity of the resource
@@ -341,22 +400,22 @@ class GeneticAlgorithm():
 
 
     def generate_solution(self): 
-        #TODO NSGA III
-        population = self.create_initial_population()
-        number_of_objectives = 5
-        divisions = 2
-        extreme_points = None
-        for i in range(self.max_generations):
-            new_population = self.generate_new_population(population)
-            combined_population = population + new_population
-            combined_population_coords = np.array([p.fitness for p in combined_population])
-            print(combined_population_coords)
-            selected_indices, best_front_indices, extreme_points = nsga3(combined_population_coords * (-1), divisions, extreme_points)
-            population = np.array(combined_population)[selected_indices]
-            population = list(population)
-            write_log(population)
-        best_pareto_front = np.array(combined_population)[best_front_indices]
-        return best_pareto_front
+        ref_dirs = get_reference_directions("das-dennis", 5, n_partitions=6)
+
+        algorithm = NSGA3(pop_size=self.population_size,
+                          sampling=DockSampling(),
+                          crossover=DockCrossover(),
+                          mutation=DockMutation(),
+                          ref_dirs=ref_dirs,
+                          eliminate_duplicates=func_is_duplicate)
+
+        res = minimize(DockProblem(self),
+                       algorithm,
+                       seed=1,
+                       verbose=True,
+                       termination=('n_gen', self.max_generations))
+
+        return res.F.flatten()
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
@@ -444,6 +503,7 @@ def main():
         init_placement = None
     gen_algo = GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, init_placement)
     solution = gen_algo.generate_solution()
+    print(solution)
 
 if __name__ == "__main__":
     main()

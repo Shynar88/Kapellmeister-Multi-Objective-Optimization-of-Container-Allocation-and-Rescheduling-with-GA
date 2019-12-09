@@ -1,5 +1,5 @@
 import numpy as np
-import main as dk
+from main import parse_arguments, GeneticAlgorithm
 
 from pymoo.model.problem import Problem
 from pymoo.model.sampling import Sampling
@@ -18,14 +18,14 @@ class DockProblem(Problem):
         self.docker_problem = docker_problem
 
     def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = np.array(x.get_fitness(), dtype=np.float)
+        out["F"] = np.array(x[0].get_fitness(), dtype=np.float)
 
 class DockSampling(Sampling):
 
     def _do(self, problem, n_samples, **kwargs):
         X = problem.docker_problem.create_initial_population()
+        X = np.reshape(X, (problem.docker_problem.population_size,1))
         return X
-
 
 class DockCrossover(Crossover):
 
@@ -48,30 +48,37 @@ class DockMutation(Mutation):
 
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
-            X[i, 0] = problem.dock_problem.mutate(X[i, 0])
+            X[i, 0] = problem.docker_problem.mutate(X[i, 0])
         return X
 
 
+def func_is_duplicate(pop, *other, **kwargs):
+    if len(other) == 0:
+        return np.full(len(pop), False)
 
-if __name__ == "__main__":
-    pop_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling = dk.parse_arguments()
-    docker_problem = dk.GeneticAlgorithm(pop_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, None)
-    p = DockProblem(docker_problem)
-    """
-    s = DockSampling()
-    X = s._do(p, 100000)
-    out = {}
-    p._evaluate(X[0], out)
-    print(out)
+    # value to finally return
+    is_duplicate = np.full(len(pop), False)
 
-    """
+    return is_duplicate
+
+
+
+def nsga3():
+    pop_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling = parse_arguments()
+    docker_problem = GeneticAlgorithm(pop_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num, rescheduling, None)
+
     ref_dirs = get_reference_directions("das-dennis", 5, n_partitions=6)
     algorithm = NSGA3(pop_size=pop_size,
-                      ref_dirs=ref_dirs)
+                      sampling=DockSampling(),
+                      crossover=DockCrossover(),
+                      mutation=DockMutation(),
+                      ref_dirs=ref_dirs,
+                      eliminate_duplicates=func_is_duplicate)
 
-    res = minimize(p,
+    res = minimize(DockProblem(docker_problem),
                    algorithm,
                    seed=1,
-                   termination=('n_gen', 100))
+                   verbose=True,
+                   termination=('n_gen', 1000))
 
-    print(res.F)
+    return res.F.flatten()
