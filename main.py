@@ -415,7 +415,7 @@ class GeneticAlgorithm():
                        verbose=True,
                        termination=('n_gen', self.max_generations))
 
-        return res.F.flatten()
+        return res.X.flatten()
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
