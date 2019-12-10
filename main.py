@@ -144,7 +144,6 @@ class Chromosome():
         nodes = self.nodes_info
         for node in nodes:
             dic = {}
-            i =1
             for container in node.containers_list:
                 if (dic.get(container.task_type) == None):
                     dic[container.task_type] = 1
@@ -195,7 +194,7 @@ class Chromosome():
         i = 0
         v = 0
         for node_id in node_ids:
-            if (node_id != init_chromosome[i]):
+            if (node_id != init_node_ids[i]):
                 i +=1
                 continue
             v += 1
