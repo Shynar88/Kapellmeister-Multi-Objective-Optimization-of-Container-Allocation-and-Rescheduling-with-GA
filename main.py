@@ -419,10 +419,14 @@ def parse_arguments():
     return args.s, args.ts, args.mg, args.mr, args.rsch
 
 def main():
-    population_size, tournament_size, max_generations, mutation_rate, rescheduling = parse_arguments()
-    # need to pass nodes and containers here 
-    gen_algo = GeneticAlgorithm(population_size, tournament_size, max_generations, mutation_rate, nodes, containers, rescheduling, None)
-    solution = gen_algo.generate_solution()
+    #################
+    # the main will not work without passing in the nodes and containers which are created in Evaluation2.py. Thus, it is recommended to use Evaluation2.py for testing
+    #################
+    return
+    # population_size, tournament_size, max_generations, mutation_rate, rescheduling = parse_arguments()
+    # # need to pass nodes and containers here 
+    # gen_algo = GeneticAlgorithm(population_size, tournament_size, max_generations, mutation_rate, nodes, containers, rescheduling, None)
+    # solution = gen_algo.generate_solution()
 
 if __name__ == "__main__":
     main()
