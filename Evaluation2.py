@@ -5,6 +5,92 @@ import numpy as np
 from ast import literal_eval
 import timeit
 
+#-----Helper Functions -----------------------------------
+def calc_idle_power(cores_new,mem_new):
+    p_ref=171
+    
+    cores_ref=4
+    p_frac_cpu=0.3
+    p_cpu=p_ref*p_frac_cpu
+    
+    mem_ref=4000
+    p_frac_mem=0.11
+    p_mem=p_ref*p_frac_mem
+    
+    delta_p_cpu=(p_cpu*cores_new/cores_ref)-p_cpu
+    delta_p_mem=(p_mem*mem_new/mem_ref)-p_mem
+    
+    return p_ref+delta_p_cpu+delta_p_mem
+
+def calc_max_power(cores_new,mem_new):
+    p_ref=218
+    
+    cores_ref=4
+    p_frac_cpu=0.3
+    p_cpu=p_ref*p_frac_cpu
+    
+    mem_ref=4000
+    p_frac_mem=0.11
+    p_mem=p_ref*p_frac_mem
+    
+    delta_p_cpu=(p_cpu*cores_new/cores_ref)-p_cpu
+    delta_p_mem=(p_mem*mem_new/mem_ref)-p_mem
+    
+    return p_ref+delta_p_cpu+delta_p_mem
+
+def find_assigned(nodes):
+    node_ids=[]
+    for i in range(len(nodes)):
+        if len(nodes[i].get_containers_list())!=0:
+            node_ids.append(nodes[i].id)
+    return node_ids
+
+def normalised_fitness(max,min,point): 
+    (f1,f2,f3,f4,f5)=point.get_fitness()
+    f=[f1,f2,f3,f4,f5]
+    res=0
+    for i in range(5):
+        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
+        
+    return res
+
+def select_from_front(front):
+    
+    (f1,f2,f3,f4,f5)=front[0].get_fitness()
+    max=[f1,f2,f3,f4,f5]
+    min=[f1,f2,f3,f4,f5]
+    
+    #find max and min for each objective
+    for i in range(len(front)):
+        (f1,f2,f3,f4,f5)=front[i].get_fitness()
+        f=[f1,f2,f3,f4,f5]
+        for obj in range(5):
+            if f[obj]>max[obj]:
+                max[obj]=f[obj]  
+            if f[obj]<min[obj]:
+                min[obj]=f[obj] 
+
+    index=0
+    best=normalised_fitness(max,min,front[0])
+    for i in range(1,len(front)):
+        f=normalised_fitness(max,min,front[i])
+        if f<best:
+            index=i
+            best=f
+            
+    return front[index]
+
+def parse_log_data():
+        list_of_population_fitnesses = []
+        for line in open("fitness.log", "r"):
+            population_fitnesses = literal_eval(line)
+            #print(len(population_fitnesses))
+            list_of_population_fitnesses.append(population_fitnesses)
+        #print(len(list_of_population_fitnesses))
+        return list_of_population_fitnesses
+
+#-----End of Helper functions----------------------------
+
 class Experiment:
     def __init__(self,node_cpu,node_mem,per_type,service_cpu,service_mem,total_services,service_cpu_low,service_cpu_high,service_mem_low,service_mem_high):
         self.node_cpu=node_cpu
@@ -74,38 +160,7 @@ class Experiment:
             id+=1
         return (containers_kub,containers_ga)
 
-def calc_idle_power(cores_new,mem_new):
-    p_ref=171
-    
-    cores_ref=4
-    p_frac_cpu=0.3
-    p_cpu=p_ref*p_frac_cpu
-    
-    mem_ref=4000
-    p_frac_mem=0.11
-    p_mem=p_ref*p_frac_mem
-    
-    delta_p_cpu=(p_cpu*cores_new/cores_ref)-p_cpu
-    delta_p_mem=(p_mem*mem_new/mem_ref)-p_mem
-    
-    return p_ref+delta_p_cpu+delta_p_mem
 
-def calc_max_power(cores_new,mem_new):
-    p_ref=218
-    
-    cores_ref=4
-    p_frac_cpu=0.3
-    p_cpu=p_ref*p_frac_cpu
-    
-    mem_ref=4000
-    p_frac_mem=0.11
-    p_mem=p_ref*p_frac_mem
-    
-    delta_p_cpu=(p_cpu*cores_new/cores_ref)-p_cpu
-    delta_p_mem=(p_mem*mem_new/mem_ref)-p_mem
-    
-    return p_ref+delta_p_cpu+delta_p_mem
-    
 def get_kub_allocations(nodes,containers):
     for i in range(len(containers)):
         chosen_node = kubernetes.least_request_priority(nodes,containers[i])
@@ -116,61 +171,9 @@ def get_kub_allocations(nodes,containers):
     return nodes
 
 def get_nsga_allocations(nodes,containers):
-    #population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num = main.parse_arguments()
-    #ga = main.GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num,nodes,containers)
-    genalg=ga.GeneticAlgorithm(300,150,7,30,10,0.3,5,8,nodes,containers,False,None) #used default values
+    genalg=ga.GeneticAlgorithm(100,7,25,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
     front=genalg.generate_solution()
     return select_from_front(front)
-
-def normalised_fitness(max,min,point): 
-    (f1,f2,f3,f4,f5)=point.get_fitness()
-    f=[f1,f2,f3,f4,f5]
-    res=0
-    for i in range(5):
-        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
-        
-    return res
-def select_from_front(front):
-    
-    (f1,f2,f3,f4,f5)=front[0].get_fitness()
-    max=[f1,f2,f3,f4,f5]
-    min=[f1,f2,f3,f4,f5]
-    
-    #find max and min for each objective
-    for i in range(len(front)):
-        (f1,f2,f3,f4,f5)=front[i].get_fitness()
-        f=[f1,f2,f3,f4,f5]
-        for obj in range(5):
-            if f[obj]>max[obj]:
-                max[obj]=f[obj]  
-            if f[obj]<min[obj]:
-                min[obj]=f[obj] 
-
-    index=0
-    best=normalised_fitness(max,min,front[0])
-    for i in range(1,len(front)):
-        f=normalised_fitness(max,min,front[i])
-        if f<best:
-            index=i
-            best=f
-            
-    return front[index]
-
-def find_assigned(nodes):
-    node_ids=[]
-    for i in range(len(nodes)):
-        if len(nodes[i].get_containers_list())!=0:
-            node_ids.append(nodes[i].id)
-    return node_ids
-
-def parse_log_data():
-        list_of_population_fitnesses = []
-        for line in open("fitness.log", "r"):
-            population_fitnesses = literal_eval(line)
-            print(len(population_fitnesses))
-            list_of_population_fitnesses.append(population_fitnesses)
-        print(len(list_of_population_fitnesses))
-        return list_of_population_fitnesses
 
 def main():
     #1)make physical configs
@@ -196,7 +199,7 @@ def main():
     cpu_M5a = [2,4,8,16,32,48,64,96]
     mem_M5a = [8192,16384,32768,65536,131072,196608,262144,393216]
     
-    #Parameters are node_cpu,node_mem,per_type,service_cpu,service_mem,total_services,service_cpu_low,service_cpu_high,service_mem_low,service_mem_high
+    #Parameters for instantiating an Experiment are node_cpu,node_mem,per_type,service_cpu,service_mem,total_services,service_cpu_low,service_cpu_high,service_mem_low,service_mem_high
     Exp_1=Experiment(cpu_A1,mem_A1,per_type_A1,[],[],100,0,2,25,1000) 
     Exp_2=Experiment(cpu_M4,mem_M4,per_type_M4,[],[],200,1,2,50,2000)
     Exp_3=Experiment(cpu_M5a,mem_M5a,per_type_M5a,[],[],400,2,4,200,4000)
@@ -210,21 +213,22 @@ def main():
         
         kub_alloc=get_kub_allocations(nodes_kub,containers_kub) 
         chr=ga.Chromosome(find_assigned(kub_alloc),containers_kub,kub_alloc,False,None)
-        (fa,fb,fc,fd,fe)=chr.get_fitness()
-        print(fa,fb,fc,fd,fe)
+        (fa,fb,fc,fd,fe)=chr.get_fitness() #fitness of kubernetes allocation
         
         nsga_alloc=get_nsga_allocations(nodes_ga,containers_ga) 
-        (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness()
-        print(f1,f2,f3,f4,f5)    
+        (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness() #fitness of selected nsga solution
+        
         log = parse_log_data()
         
         x_names=['Obj1','Obj2','Obj3','Obj4','Obj5']
         kub=[fa,fb,fc,fd,fe]
         nsga=[f1,f2,f3,f4,f5]
         visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
+        
         end = timeit.timeit()
-        print("Execution Time: %s", %(end - start))
-    
+        print("Execution Time: %s" %(end - start))
+        
+    """
     for i in range(len(log)): #for each generation
         obj_1=[]
         obj_2=[]
@@ -238,6 +242,6 @@ def main():
             obj_4.append(log[i][j][3])    
             obj_5.append(log[i][j][4])
         visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Generation "+str(i+1))
-    
+    """
 if __name__ == "__main__":
     main()
