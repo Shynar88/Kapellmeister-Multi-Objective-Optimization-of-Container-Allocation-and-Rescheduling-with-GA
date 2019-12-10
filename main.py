@@ -140,7 +140,7 @@ class Chromosome():
         return v
 
     def off_2(self):
-        v =0
+        v = 0
         nodes = self.nodes_info
         for node in nodes:
             dic = {}
