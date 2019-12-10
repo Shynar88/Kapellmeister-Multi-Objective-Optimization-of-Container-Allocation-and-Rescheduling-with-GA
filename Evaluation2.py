@@ -3,6 +3,7 @@ import kubernetes
 import visualise
 import numpy as np
 from ast import literal_eval
+import timeit
 
 class Experiment:
     def __init__(self,node_cpu,node_mem,per_type,service_cpu,service_mem,total_services,service_cpu_low,service_cpu_high,service_mem_low,service_mem_high):
@@ -180,7 +181,8 @@ def main():
     #6)show graphs of kub vs final nsga 
     #7)look at history of nsga and make graphs of front
     
-    
+    start = timeit.timeit()
+
     #AWS A1
     per_type_A1 = 20
     cpu_A1 = [1,2,4,8,16]
@@ -220,7 +222,8 @@ def main():
         kub=[fa,fb,fc,fd,fe]
         nsga=[f1,f2,f3,f4,f5]
         visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
-    
+        end = timeit.timeit()
+        print("Execution Time: %s", %(end - start))
     
     for i in range(len(log)): #for each generation
         obj_1=[]
