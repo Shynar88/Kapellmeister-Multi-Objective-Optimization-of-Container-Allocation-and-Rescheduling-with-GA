@@ -1,6 +1,5 @@
 import main as ga
 import kubernetes
-import nsga_3
 import visualise
 import numpy as np
 from ast import literal_eval
@@ -118,7 +117,7 @@ def get_kub_allocations(nodes,containers):
 def get_nsga_allocations(nodes,containers):
     #population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num = main.parse_arguments()
     #ga = main.GeneticAlgorithm(population_size, mat_pool_size, tournament_size, elite_size, max_generations, mutation_rate, nodes_num, containers_num,nodes,containers)
-    genalg=ga.GeneticAlgorithm(300,150,7,30,10,0.3,5,8,nodes,containers) #used default values
+    genalg=ga.GeneticAlgorithm(300,150,7,30,10,0.3,5,8,nodes,containers,False,None) #used default values
     front=genalg.generate_solution()
     return select_from_front(front)
 
@@ -208,7 +207,7 @@ def main():
         (containers_kub,containers_ga)=experiment.make_containers() #list of containers of Container class
         
         kub_alloc=get_kub_allocations(nodes_kub,containers_kub) 
-        chr=ga.Chromosome(find_assigned(kub_alloc),containers_kub,kub_alloc)
+        chr=ga.Chromosome(find_assigned(kub_alloc),containers_kub,kub_alloc,False,None)
         (fa,fb,fc,fd,fe)=chr.get_fitness()
         print(fa,fb,fc,fd,fe)
         
