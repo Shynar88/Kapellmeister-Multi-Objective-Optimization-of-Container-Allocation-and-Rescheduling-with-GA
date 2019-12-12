@@ -45,12 +45,12 @@ def find_assigned(nodes):
             node_ids.append(nodes[i].id)
     return node_ids
 
-def normalised_fitness(max,min,point): 
+def normalised_fitness(max,point): 
     (f1,f2,f3,f4,f5)=point.get_fitness()
     f=[f1,f2,f3,f4,f5]
     res=0
     for i in range(5):
-        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
+        res+=0.2*f[i]/max[i]
         
     return res
 
@@ -58,7 +58,6 @@ def select_from_front(front):
     
     (f1,f2,f3,f4,f5)=front[0].get_fitness()
     max=[f1,f2,f3,f4,f5]
-    min=[f1,f2,f3,f4,f5]
     
     #find max and min for each objective
     for i in range(len(front)):
@@ -67,13 +66,11 @@ def select_from_front(front):
         for obj in range(5):
             if f[obj]>max[obj]:
                 max[obj]=f[obj]  
-            if f[obj]<min[obj]:
-                min[obj]=f[obj] 
 
     index=0
-    best=normalised_fitness(max,min,front[0])
+    best=normalised_fitness(max,front[0])
     for i in range(1,len(front)):
-        f=normalised_fitness(max,min,front[i])
+        f=normalised_fitness(max,front[i])
         if f<best:
             index=i
             best=f
@@ -171,9 +168,10 @@ def get_kub_allocations(nodes,containers):
     return nodes
 
 def get_nsga_allocations(nodes,containers):
-    genalg=ga.GeneticAlgorithm(100,7,25,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
+    genalg=ga.GeneticAlgorithm(200,7,200,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
     front=genalg.generate_solution()
-    return select_from_front(front)
+    selected = select_from_front(front)
+    return selected
 
 def main():
     #1)make physical configs
@@ -218,7 +216,7 @@ def main():
         nsga_alloc=get_nsga_allocations(nodes_ga,containers_ga) 
         (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness() #fitness of selected nsga solution
         
-        log = parse_log_data()
+        #log = parse_log_data()
         
         x_names=['Obj1','Obj2','Obj3','Obj4','Obj5']
         kub=[fa,fb,fc,fd,fe]

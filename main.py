@@ -15,6 +15,7 @@ from pymoo.model.mutation import Mutation
 from pymoo.algorithms.nsga3 import NSGA3
 from pymoo.optimize import minimize
 from pymoo.factory import get_reference_directions
+from pymoo.factory import get_selection
 
 class DockProblem(Problem):
 
@@ -55,6 +56,29 @@ class DockMutation(Mutation):
         for i in range(len(X)):
             X[i, 0] = problem.docker_problem.mutate(X[i, 0])
         return X
+
+
+def feasability_tournament(pop, P, algorithm, **kwargs):
+
+    # P is a matrix with chosen indices from pop
+    n_tournaments, n_competitors = P.shape
+
+    S = np.zeros(n_tournaments, dtype=np.int)
+
+    for i in range(n_tournaments):
+
+        tournament = P[i]
+
+        scores = np.zeros(n_competitors, dtype=np.int)
+        for j in range(n_competitors):
+            infeasability_score = pop[tournament[j]].X[0].get_infeasability()
+            scores[j] = infeasability_score
+
+        winner_index = scores.argsort()[0]
+
+        S[i] = tournament[winner_index]
+
+    return S
 
 
 def func_is_duplicate(pop, *other, **kwargs):
@@ -371,8 +395,17 @@ class GeneticAlgorithm():
     def generate_solution(self): 
         ref_dirs = get_reference_directions("das-dennis", 5, n_partitions=6)
 
+        #selection = get_selection('tournament',
+        #                          {'pressure' : self.tournament_size, 'func_comp' : feasability_tournament})
+
+        selection = get_selection('tournament',
+                                  func_comp=feasability_tournament,
+                                  #n_select=200,
+                                  pressure=self.tournament_size)
+
         algorithm = NSGA3(pop_size=self.population_size,
                           sampling=DockSampling(),
+                          selection=selection,
                           crossover=DockCrossover(),
                           mutation=DockMutation(),
                           ref_dirs=ref_dirs,
