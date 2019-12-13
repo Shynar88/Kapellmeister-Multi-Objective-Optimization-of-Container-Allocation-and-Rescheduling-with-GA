@@ -193,8 +193,8 @@ class Chromosome():
         init_node_ids = init_chromosome.node_ids
         i = 0
         v = 0
-        for node_id in node_ids:
-            if (node_id != init_node_ids[i]):
+        for j in range (len(node_ids)-1):
+            if (node_ids[j] != init_node_ids[i]):
                 i +=1
                 continue
             v += 1

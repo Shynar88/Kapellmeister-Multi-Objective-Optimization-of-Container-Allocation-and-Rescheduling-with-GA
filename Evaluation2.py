@@ -223,7 +223,7 @@ def main():
         nsga_alloc=get_nsga_allocations(nodes_ga,containers_ga) 
         (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness() #fitness of selected nsga solution
         
-        log = parse_log_data()
+        #log = parse_log_data()
         
         x_names=['Obj1','Obj2','Obj3','Obj4','Obj5']
         kub=[fa,fb,fc,fd,fe]
@@ -235,22 +235,26 @@ def main():
 
         #Rescheduling Experiment
         #Adding dummy container, so that rescheduling is needed
-        # nodes = nsga_alloc.nodes_info
-        # min_cpu = 0
-        # min_mem = 0
-        # for node in nodes:
-        #     if node.remaining_cpu < experiment.service_cpu_high and node.remaining_memory < experiment.service_mem_high :
-        #         min_cpu = experiment.service_cpu_high
-        #         min_mem = experiment.service_mem_high
-        #         break
+        nodes = nsga_alloc.nodes_info
+        min_cpu = 0
+        min_mem = 0
+        for node in nodes:
+            if node.remaining_cpu < experiment.service_cpu_high and node.remaining_memory < experiment.service_mem_high :
+                min_cpu = experiment.service_cpu_high
+                min_mem = experiment.service_mem_high
+                dummy_container = ga.Container(min_cpu, min_mem, len(containers_ga))
+                #nsga_alloc.node_ids.append(node.id)
+                #node.containers_list.append(dummy_container) #maybe then need to compute obj6 except last element
+                break
 
-        # dummy_container = ga.Container(min_cpu, min_mem, len(containers_ga))
-        # containers_ga.append(dummy_container)
-        # nsga_rescheduling = get_nsga_rescheduling(nodes_ga, containers_ga,nsga_alloc.nodes_info)
+        containers_ga.append(dummy_container)
+        nsga_rescheduling = get_nsga_rescheduling(nodes_ga, containers_ga, nsga_alloc)
+        return
+
 
         
     """
-    for i in range(len(log)): #for each generation
+    for i in range(len(log)): #for each generaion
         obj_1=[]
         obj_2=[]
         obj_3=[]
