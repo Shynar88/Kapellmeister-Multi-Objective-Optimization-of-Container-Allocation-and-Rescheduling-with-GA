@@ -418,9 +418,7 @@ class GeneticAlgorithm():
                        save_history=True,
                        termination=('n_gen', self.max_generations))
 
-        breakpoint()
-
-        return res.X.flatten()
+        return res.X.flatten(), np.array([snap.pop.get("F") for snap in res.history])
 
 def nsga3_dummy(population_coords, divisions):
     pop_length = population_coords.shape[0]
