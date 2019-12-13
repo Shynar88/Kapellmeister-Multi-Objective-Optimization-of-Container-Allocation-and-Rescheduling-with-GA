@@ -18,8 +18,8 @@ from pymoo.factory import get_reference_directions
 
 class DockProblem(Problem):
 
-    def __init__(self, docker_problem):
-        super().__init__(n_var=1, n_obj=5, n_constr=0, elementwise_evaluation=True)
+    def __init__(self, n, docker_problem):
+        super().__init__(n_var=1, n_obj=n, n_constr=0, elementwise_evaluation=True)
         self.docker_problem = docker_problem
 
     def _evaluate(self, x, out, *args, **kwargs):
@@ -369,16 +369,30 @@ class GeneticAlgorithm():
 
 
     def generate_solution(self): 
+        
+        if(self.rescheduling):
+            ref_dirs = get_reference_directions("das-dennis", 6, n_partitions=6)
+            algorithm = NSGA3(pop_size=self.population_size,
+                          sampling=DockSampling(),
+                          crossover=DockCrossover(),
+                          mutation=DockMutation(),
+                          ref_dirs=ref_dirs,
+                          eliminate_duplicates=func_is_duplicate)
+            res = minimize(DockProblem(6, self),
+                       algorithm,
+                       seed=1,
+                       verbose=True,
+                       termination=('n_gen', self.max_generations))
+            return res.X.flatten()
+            
         ref_dirs = get_reference_directions("das-dennis", 5, n_partitions=6)
-
         algorithm = NSGA3(pop_size=self.population_size,
                           sampling=DockSampling(),
                           crossover=DockCrossover(),
                           mutation=DockMutation(),
                           ref_dirs=ref_dirs,
                           eliminate_duplicates=func_is_duplicate)
-
-        res = minimize(DockProblem(self),
+        res = minimize(DockProblem(5,  self),
                        algorithm,
                        seed=1,
                        verbose=True,

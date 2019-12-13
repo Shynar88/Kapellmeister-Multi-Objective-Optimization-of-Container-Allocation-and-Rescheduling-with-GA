@@ -13,6 +13,17 @@ def obj_over_configs(x_config_names,y_kub,y_nsga,obj_name,title):
     plt.title(title)
     plt.legend()
     plt.show()
+
+def obj_over_configs_rescheduling(x_config_names,y_kub,y_nsga,obj_name,title):
+    x_idx = np.arange(len(x_config_names))
+    width = 0.3
+    plt.bar(x_idx-width/2,y_kub,width=width,label="NSGA-II(Rescheduling)")
+    plt.bar(x_idx+width/2,y_nsga,width=width,label="NSGA-II(Scheduling)")
+    plt.xlabel('Fitness Objectives')
+    plt.ylabel(obj_name)
+    plt.title(title)
+    plt.legend()
+    plt.show()
     
 """
 #filler data

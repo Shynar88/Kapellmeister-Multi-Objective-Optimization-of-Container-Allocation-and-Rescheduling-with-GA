@@ -45,7 +45,7 @@ def find_assigned(nodes):
             node_ids.append(nodes[i].id)
     return node_ids
 
-def normalised_fitness(max,min,point): 
+def normalised_fitness_5(max,min,point): 
     (f1,f2,f3,f4,f5)=point.get_fitness()
     f=[f1,f2,f3,f4,f5]
     res=0
@@ -53,8 +53,16 @@ def normalised_fitness(max,min,point):
         res+=0.2*(f[i]-min[i])/(max[i]-min[i])
         
     return res
+def normalised_fitness_6(max,min,point): 
+    (f1,f2,f3,f4,f5,f6)=point.get_fitness()
+    f=[f1,f2,f3,f4,f5,f6]
+    res=0
+    for i in range(6):
+        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
+        
+    return res
 
-def select_from_front(front):
+def select_from_front_5(front):
     
     (f1,f2,f3,f4,f5)=front[0].get_fitness()
     max=[f1,f2,f3,f4,f5]
@@ -71,9 +79,35 @@ def select_from_front(front):
                 min[obj]=f[obj] 
 
     index=0
-    best=normalised_fitness(max,min,front[0])
+    best=normalised_fitness_5(max,min,front[0])
     for i in range(1,len(front)):
-        f=normalised_fitness(max,min,front[i])
+        f=normalised_fitness_5(max,min,front[i])
+        if f<best:
+            index=i
+            best=f
+            
+    return front[index]
+
+def select_from_front_6(front):
+    
+    (f1,f2,f3,f4,f5, f6)=front[0].get_fitness()
+    max=[f1,f2,f3,f4,f5,f6]
+    min=[f1,f2,f3,f4,f5,f6]
+    
+    #find max and min for each objective
+    for i in range(len(front)):
+        (f1,f2,f3,f4,f5,f6)=front[i].get_fitness()
+        f=[f1,f2,f3,f4,f5,f6]
+        for obj in range(6):
+            if f[obj]>max[obj]:
+                max[obj]=f[obj]  
+            if f[obj]<min[obj]:
+                min[obj]=f[obj] 
+
+    index=0
+    best=normalised_fitness_6(max,min,front[0])
+    for i in range(1,len(front)):
+        f=normalised_fitness_6(max,min,front[i])
         if f<best:
             index=i
             best=f
@@ -173,12 +207,12 @@ def get_kub_allocations(nodes,containers):
 def get_nsga_allocations(nodes,containers):
     genalg=ga.GeneticAlgorithm(100,7,25,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
     front=genalg.generate_solution()
-    return select_from_front(front)
+    return select_from_front_5(front)
 
 def get_nsga_rescheduling(nodes, containers, init_chromosome):
     genalg=ga.GeneticAlgorithm(100,7,25,0.3,nodes,containers,True,init_chromosome) #CHANGE PARAMETERS FOR GA HERE
     front=genalg.generate_solution()
-    return select_from_front(front)
+    return select_from_front_6(front)
 
 def main():
     #1)make physical configs
@@ -243,13 +277,23 @@ def main():
                 min_cpu = experiment.service_cpu_high
                 min_mem = experiment.service_mem_high
                 dummy_container = ga.Container(min_cpu, min_mem, len(containers_ga))
+                containers_ga.append(dummy_container)
                 #nsga_alloc.node_ids.append(node.id)
                 #node.containers_list.append(dummy_container) #maybe then need to compute obj6 except last element
                 break
 
-        containers_ga.append(dummy_container)
         nsga_rescheduling = get_nsga_rescheduling(nodes_ga, containers_ga, nsga_alloc)
-        return
+        (off1,off2, off3, off4, off5, off6) = nsga_rescheduling.get_fitness()
+        
+        #Rescheduling impemented as Scheduling
+        nsga_re_scheduling = get_nsga_allocations(nodes_ga, containers_ga)
+        off_6 = nsga_re_scheduling.off_6(nsga_alloc)
+        (off_1,off_2, off_3, off_4, off_5)= nsga_re_scheduling.get_fitness()
+
+        x_names=['Obj1','Obj2','Obj3','Obj4','Obj5', 'Obj6']
+        resch=[off1,off2, off3, off4, off5, off6]
+        re_sch=[off_1,off_2, off_3, off_4, off_5, off_6]
+        visualise.obj_over_configs_rescheduling(x_names,resch,re_sch,"Objective Values","Perfomance of Rescheduling on the 6 fitness objectives")
 
 
         
