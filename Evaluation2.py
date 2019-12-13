@@ -175,6 +175,11 @@ def get_nsga_allocations(nodes,containers):
     front=genalg.generate_solution()
     return select_from_front(front)
 
+def get_nsga_rescheduling(nodes, containers, init_chromosome):
+    genalg=ga.GeneticAlgorithm(100,7,25,0.3,nodes,containers,True,init_chromosome) #CHANGE PARAMETERS FOR GA HERE
+    front=genalg.generate_solution()
+    return select_from_front(front)
+
 def main():
     #1)make physical configs
     #2)decide workload
@@ -227,6 +232,22 @@ def main():
         
         end = timeit.timeit()
         print("Execution Time: %s" %(end - start))
+
+        #Rescheduling Experiment
+        #Adding dummy container, so that rescheduling is needed
+        # nodes = nsga_alloc.nodes_info
+        # min_cpu = 0
+        # min_mem = 0
+        # for node in nodes:
+        #     if node.remaining_cpu < experiment.service_cpu_high and node.remaining_memory < experiment.service_mem_high :
+        #         min_cpu = experiment.service_cpu_high
+        #         min_mem = experiment.service_mem_high
+        #         break
+
+        # dummy_container = ga.Container(min_cpu, min_mem, len(containers_ga))
+        # containers_ga.append(dummy_container)
+        # nsga_rescheduling = get_nsga_rescheduling(nodes_ga, containers_ga,nsga_alloc.nodes_info)
+
         
     """
     for i in range(len(log)): #for each generation
@@ -243,5 +264,6 @@ def main():
             obj_5.append(log[i][j][4])
         visualise.optimal_front_at_gen(obj_1,obj_2,"Obj_1","Obj_2","Generation "+str(i+1))
     """
+
 if __name__ == "__main__":
     main()
