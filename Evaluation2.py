@@ -168,10 +168,10 @@ def get_kub_allocations(nodes,containers):
     return nodes
 
 def get_nsga_allocations(nodes,containers):
-    genalg=ga.GeneticAlgorithm(200,7,200,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
-    front=genalg.generate_solution()
+    genalg = ga.GeneticAlgorithm(200,7,10,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
+    front, history = genalg.generate_solution()
     selected = select_from_front(front)
-    return selected
+    return selected, history
 
 def main():
     #1)make physical configs
@@ -213,7 +213,7 @@ def main():
         chr=ga.Chromosome(find_assigned(kub_alloc),containers_kub,kub_alloc,False,None)
         (fa,fb,fc,fd,fe)=chr.get_fitness() #fitness of kubernetes allocation
         
-        nsga_alloc=get_nsga_allocations(nodes_ga,containers_ga) 
+        nsga_alloc, history = get_nsga_allocations(nodes_ga,containers_ga) 
         (f1,f2,f3,f4,f5)=nsga_alloc.get_fitness() #fitness of selected nsga solution
         
         #log = parse_log_data()

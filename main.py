@@ -415,7 +415,10 @@ class GeneticAlgorithm():
                        algorithm,
                        seed=1,
                        verbose=True,
+                       save_history=True,
                        termination=('n_gen', self.max_generations))
+
+        breakpoint()
 
         return res.X.flatten()
 
