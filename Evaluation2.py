@@ -46,20 +46,20 @@ def find_assigned(nodes):
             node_ids.append(nodes[i].id)
     return node_ids
 
-def normalised_fitness(max,point): 
+def normalised_fitness(max,min,point): 
     (f1,f2,f3,f4,f5)=point.get_fitness()
     f=[f1,f2,f3,f4,f5]
     res=0
     for i in range(5):
-        res+=0.2*f[i]/max[i]
-
+        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
     return res
 
 def select_from_front(front):
 
     (f1,f2,f3,f4,f5)=front[0].get_fitness()
     max=[f1,f2,f3,f4,f5]
-
+    min=[f1,f2,f3,f4,f5]
+    
     #find max and min for each objective
     for i in range(len(front)):
         (f1,f2,f3,f4,f5)=front[i].get_fitness()
@@ -67,10 +67,13 @@ def select_from_front(front):
         for obj in range(5):
             if f[obj]>max[obj]:
                 max[obj]=f[obj]  
+            if f[obj]<min[obj]:
+                min[obj]=f[obj] 
+
     index=0
-    best=normalised_fitness(max,front[0])
+    best=normalised_fitness(max,min,front[0])
     for i in range(1,len(front)):
-        f=normalised_fitness(max,front[i])
+        f=normalised_fitness(max,min,front[i])
         if f<best:
             index=i
             best=f
