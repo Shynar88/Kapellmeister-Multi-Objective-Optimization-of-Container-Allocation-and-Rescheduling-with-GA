@@ -51,7 +51,8 @@ def normalised_fitness(max,min,point):
     f=[f1,f2,f3,f4,f5]
     res=0
     for i in range(5):
-        res+=0.2*(f[i]-min[i])/(max[i]-min[i])
+        if max[i] != min[i]:
+            res+=0.2*(f[i]-min[i])/(max[i]-min[i])
     return res
 
 def select_from_front(front):
@@ -168,7 +169,7 @@ def get_kub_allocations(nodes,containers):
     return nodes
 
 def get_nsga_allocations(nodes,containers):
-    genalg = ga.GeneticAlgorithm(200,7,200,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
+    genalg = ga.GeneticAlgorithm(200,7,2,0.3,nodes,containers,False,None) #CHANGE PARAMETERS FOR GA HERE
     front, history = genalg.generate_solution()
     selected = select_from_front(front)
     return selected, history
@@ -218,12 +219,13 @@ def main():
         x_names=['Obj1','Obj2','Obj3','Obj4','Obj5']
         kub=[fa,fb,fc,fd,fe]
         nsga=[f1,f2,f3,f4,f5]
-        #visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
+
+        visualize_history(history)
+        visualise.obj_over_configs(x_names,kub,nsga,"Objective Values","Perfomance of Kubernetes vs NSGA-3 on the 5 fitness objectives")
 
         end = timeit.timeit()
         print("Execution Time: %s" %(end - start))
 
-    visualize_history(history)
 
 if __name__ == "__main__":
     main()
