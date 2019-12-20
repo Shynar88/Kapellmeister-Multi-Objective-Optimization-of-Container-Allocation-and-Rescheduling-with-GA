@@ -26,5 +26,19 @@ def generate_kubernetes_solution(containers, nodes):
     kub_chromosome.nodes = nodes
     return kub_chromosome
 
-def get_nsga_score():
-    pass
+def get_nsga_best_of_front(front):
+    example = front[0].get_fitness()
+    n_obj = len(example)
+    n_front = len(front)
+    fitness = np.zeros((n_front, n_obj))
+    for i, f in enumerate(front):
+        fitness[i,:] = f.get_fitness()
+
+    min_fitness = np.min(fitness, axis=0)
+    max_fitness = np.max(fitness, axis=0)
+
+    normalized_fitness = (fitness - min_fitness)/(max_fitness-min_fitness)
+    scores = np.sum(normalized_fitness, axis=1)
+    index = np.argmin(scores)
+
+    return front[index]

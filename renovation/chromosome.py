@@ -152,7 +152,7 @@ class Chromosome():
             cpu_share = (n.max_cpu - n.free_cpu) / n.max_cpu
             memory_share = (n.max_memory - n.free_memory) / n.max_memory
             s += n.idle_power + (cpu_share + memory_share)/2 * (n.max_power - n.idle_power)
-        return s
+        return s/len(self.nodes)/10
 
     def _obj_4(self):
         s = 0
@@ -168,6 +168,9 @@ class Chromosome():
             if c.node is None:
                 s += 1
         return s
+
+    def _obj_6(self):
+        pass
 
     def get_fitness(self):
         if self.fitness is None:

@@ -30,13 +30,16 @@ def visualize_history(history, name):
     plt.show()
     plt.close()
 
-def obj_over_configs(kub_scores,nsga_scores):
+def visualize_kub_nsga(kub_scores,nsga_scores):
     width = 0.3
-    plt.bar(x_idx-width/2,y_kub,width=width,label="Kubernetes")
-    plt.bar(x_idx+width/2,y_nsga,width=width,label="NSGA-II")
+    x_idx = np.arange(1,len(nsga_scores)+1)
+    plt.bar(x_idx-width/2,kub_scores,width=width,label="Kubernetes")
+    plt.bar(x_idx+width/2,nsga_scores,width=width,label="NSGA-III")
+    obj_names = ['obj_'+str(i) for i in range(1,len(nsga_scores)+1)]
     plt.xlabel('Fitness Objectives')
-    plt.ylabel(obj_name)
-    plt.title(title)
+    plt.ylabel(obj_names)
+    plt.title('Score comparison')
     plt.legend()
     plt.savefig('compare.png')
+    plt.show()
     plt.close()
