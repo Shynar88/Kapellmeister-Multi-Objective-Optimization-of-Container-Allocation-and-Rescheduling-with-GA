@@ -1,5 +1,5 @@
 # Kapellmeister
-Mobile application for blind and low-vision people which leverages ML models to create new value. 
+Multi-Objective Optimization of Container Allocation and Rescheduling with GA
 
 ## Report
 
