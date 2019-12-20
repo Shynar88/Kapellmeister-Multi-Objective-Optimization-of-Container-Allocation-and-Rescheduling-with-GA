@@ -16,16 +16,12 @@ From Professor's document:
 
 To use this program you will have to install modified NSGA-III library pymoo (Deb et al.):
 
-.. code:: bash
-
     git clone -b artemii_edits https://github.com/Electr0phile/pymoo/
     cd pymoo
     pip install .
 
 After that run Evaluation2.py:
 
-.. code:: bash
-    
     python Evaluation2.py
     
 After execution it will save images with resulting plots to \*.png files.
