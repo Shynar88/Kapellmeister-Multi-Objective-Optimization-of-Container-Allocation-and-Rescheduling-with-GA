@@ -19,7 +19,9 @@ To use this program you will have to install modified NSGA-III library pymoo (De
     git clone -b artemii_edits https://github.com/Electr0phile/pymoo/
     cd pymoo
     pip install .
-
+Additionally you will also need to install NumPy:
+    pip install numpy
+  
 After that run Evaluation2.py:
 
     python Evaluation2.py
