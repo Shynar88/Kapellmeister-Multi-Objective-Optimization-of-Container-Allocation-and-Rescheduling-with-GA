@@ -8,6 +8,7 @@ from pymoo.algorithms.nsga3 import NSGA3
 from pymoo.optimize import minimize
 from pymoo.factory import get_reference_directions
 from pymoo.factory import get_selection
+import matplotlib.pyplot as plt
 
 class Node():
 
@@ -27,7 +28,7 @@ class Node():
         self.containers = []
 
     def __repr__(self):
-        return f"Node(free_cpu={self.free_cpu},free_mem={self.free_memory},p_max={self.max_power},p_idle={self.idle_power},feas={self.feasible})"
+        return f"Node(max_cpu={self.max_cpu},max_mem={self.max_memory},p_max={self.max_power},p_idle={self.idle_power},feas={self.feasible})"
 
     def _assign_container(self, container):
         self.free_cpu -= container.required_cpu
@@ -77,6 +78,7 @@ class Node():
 
         return p_max_total_ref + del_p_mem_max + del_p_cpu_max
 
+
 class Container():
 
     def __init__(self, required_cpu, required_memory, task_type):
@@ -105,6 +107,7 @@ class Chromosome():
         self.containers = containers
         self.nodes      = nodes
         self._allocate_nodes()
+        self.fitness = None
 
     def __str__(self):
         s = ""
@@ -168,8 +171,11 @@ class Chromosome():
         return s
 
     def get_fitness(self):
-        return np.array((self._obj_1(), self._obj_2(), self._obj_3(), self._obj_4(), self._obj_5()),
+        # Assume that between birth and mutation there is no fitness call
+        if self.fitness is None:
+            self.fitness = np.array((self._obj_1(), self._obj_2(), self._obj_3(), self._obj_4(), self._obj_5()),
                          dtype=np.float)
+        return self.fitness
 
     def get_infeasibility(self):
         s = 0
@@ -180,11 +186,42 @@ class Chromosome():
 
     def crossover(self, other):
         cross_point = np.random.randint(1, len(self.containers) + 1)
-        child = copy.deepcopy(self)
+        child = self._copy()
         for i in range(cross_point, len(self.containers)):
             child.containers[i].unassign_node()
-            child.containers[i].assign_node(other.containers[i].node)
+            # Need to copy node
+            old_node = other.containers[i].node
+            if old_node is not None:
+                old_node_index = np.array(np.where(other.nodes == old_node)).flatten()[0]
+                child.containers[i].assign_node(child.nodes[old_node_index])
         return child
+
+    def _copy(self):
+        node_indices = []
+        for c in self.containers:
+            if c.node is not None:
+                node_indices.append((np.where(self.nodes == c.node)[0][0]))
+            else:
+                node_indices.append(None)
+
+        new_nodes = np.full(len(self.nodes), None)
+        for i in range(len(self.nodes)):
+            old_node = self.nodes[i]
+            new_nodes[i] = Node(old_node.max_cpu, old_node.max_memory)
+
+        new_containers = np.full(len(self.containers), None)
+        for i in range(len(self.containers)):
+            old_cont= self.containers[i]
+            new_containers[i] = Container(old_cont.required_cpu,
+                                          old_cont.required_memory,
+                                          old_cont.task_type)
+            if node_indices[i] is not None:
+                new_containers[i].assign_node(new_nodes[node_indices[i]])
+
+        new_chromo = Chromosome([],[])
+        new_chromo.containers = new_containers
+        new_chromo.nodes = new_nodes
+        return new_chromo
 
     def mutate(self):
         r = np.random.randint(0,4)
@@ -446,6 +483,37 @@ def solve(kwargs):
 
     return res.X.flatten(), res.history
 
+
+def visualize_history(history, name):
+
+    n_gen, pop_size, n_obj = history.shape
+
+    fig, axs = plt.subplots(n_obj, 1)
+    axs[-1].set_xlabel("Generations")
+
+    for i in range(n_obj):
+        x = np.arange(1,n_gen+1)
+        axs[i].set_xlim(0, n_gen+1)
+        axs[i].set_ylabel('obj_' + str(i+1))
+        #for j in range(n_gen):
+        #    x = np.ones(pop_size) * (j + 1)
+        #    axs[i].plot(x, history[j,:,i], 'r.')
+        max_obj = np.max(history[:,:,i], axis=1)
+        min_obj = np.min(history[:,:,i], axis=1)
+        axs[i].plot(x, max_obj, 'r-')
+        axs[i].plot(x, min_obj, 'r-')
+        axs[i].fill_between(x, max_obj, min_obj, where=max_obj>min_obj, facecolor='red', alpha=0.1)
+
+        average = np.sum(history[:,:,i], axis=1) / pop_size
+        x = np.arange(1, n_gen+1)
+        axs[i].plot(x, average, 'b--')
+
+    fig.set_size_inches(10,10)
+    plt.savefig(name)
+    plt.show()
+    plt.close()
+
+
 kwargs = {  'n_obj':5,
        'population_size':200,
        'tournament_size':7,
@@ -461,4 +529,4 @@ kwargs = {  'n_obj':5,
  }
 
 r, h = solve(kwargs)
-
+visualize_history(h, "plot.png")
