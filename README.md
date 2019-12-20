@@ -8,6 +8,8 @@ Mobile application for blind and low-vision people which leverages ML models to 
 
 ## Developer guide
 
+From Professor's document: "The repository should contain sufficient information so that we can execute your project." !!!!!!!!!!
+
 **iOS application**<br/>
 All the client side code is in the A-Eye folder.<br/>
 **Dependencies** XCode, IPhone with iOS version >= 12.3.1, Alamofire(4.7.3), SwiftyJSON(4.0), AFNetworking(2.5.4)<br/>
