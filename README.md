@@ -7,8 +7,9 @@ Mobile application for blind and low-vision people which leverages ML models to 
 [1] A. Velikanov, S. Torekhan, K. Baryktabasova, T. Mathews,  [Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm](GenGenPaper.pdf)
 
 ## Developer guide
-
-From Professor's document: "The repository should contain sufficient information so that we can execute your project." !!!!!!!!!!
+From Professor's document:
+"Make sure your submission is self-contained. If it has any external dependency, either include it in the repository or provide a detailed instruction on how to install them. We expect your project to work out of the box with reasonable ease."<br/>
+ "The repository should contain sufficient information so that we can execute your project." !!!!!!!!!!
 
 **iOS application**<br/>
 All the client side code is in the A-Eye folder.<br/>
