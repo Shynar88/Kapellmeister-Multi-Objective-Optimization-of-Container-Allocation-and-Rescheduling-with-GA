@@ -8,7 +8,6 @@ from pymoo.algorithms.nsga3 import NSGA3
 from pymoo.optimize import minimize
 from pymoo.factory import get_reference_directions
 from pymoo.factory import get_selection
-import matplotlib.pyplot as plt
 
 class Node():
 
@@ -171,10 +170,14 @@ class Chromosome():
         return s
 
     def get_fitness(self):
-        # Assume that between birth and mutation there is no fitness call
         if self.fitness is None:
             self.fitness = np.array((self._obj_1(), self._obj_2(), self._obj_3(), self._obj_4(), self._obj_5()),
                          dtype=np.float)
+        return self.fitness
+
+    def _update_fitness(self):
+        self.fitness = np.array((self._obj_1(), self._obj_2(), self._obj_3(), self._obj_4(), self._obj_5()),
+                     dtype=np.float)
         return self.fitness
 
     def get_infeasibility(self):
@@ -233,6 +236,7 @@ class Chromosome():
             self._unassign_mutation()
         else:
             self._assign_mutation()
+        self._update_fitness()
 
     def _swap_mutation(self):
         viable_containers = []
@@ -288,18 +292,23 @@ class Chromosome():
 
 def generate_initial_population(
                                 population_size,
-                                n_containers,
-                                n_services,
-                                containers_cpu_bounds,
-                                containers_memory_bounds,
-                                nodes_cpu_types,
-                                nodes_memory_types,
-                                nodes_per_type,
+                                containers,
+                                nodes,
                                 ):
-    assert len(containers_cpu_bounds) == len(containers_memory_bounds)
-    assert len(nodes_cpu_types) == len(nodes_memory_types)
 
-    """Generate_containers"""
+    pop = np.full(population_size, None)
+    for i in range(population_size):
+        pop[i] = Chromosome(np.array(copy.deepcopy(containers)), np.array(copy.deepcopy(nodes)))
+
+    return pop
+
+def generate_containers(
+                        n_containers,
+                        n_services,
+                        containers_cpu_bounds,
+                        containers_memory_bounds,
+                        ):
+    assert len(containers_cpu_bounds) == len(containers_memory_bounds)
 
     spread = 2
     avg_cont_per_serv = int(n_containers/n_services)
@@ -317,216 +326,19 @@ def generate_initial_population(
             memory = np.random.randint(min_memory, max_memory+1)
             containers.append(Container(cpu, memory, i))
 
-    """ Generate nodes """
+    return containers
+
+def generate_nodes(
+                  nodes_cpu_types,
+                  nodes_memory_types,
+                  nodes_per_type,
+                  ):
+
+    assert len(nodes_cpu_types) == len(nodes_memory_types)
 
     nodes = []
     for cpu, mem in zip(nodes_cpu_types, nodes_memory_types):
         for i in range(nodes_per_type):
             nodes.append(Node(cpu, mem))
+    return nodes
 
-    pop = np.full(population_size, None)
-    for i in range(population_size):
-        pop[i] = Chromosome(np.array(copy.deepcopy(containers)), np.array(copy.deepcopy(nodes)))
-
-    return pop
-
-
-class Kapellmeister():
-
-    def __init__(self,
-                 pop_size,
-                 tournamet_size,
-                 generations,
-                 mutation_rate,
-                 nodes,
-                 containers):
-        self.pop_size = pop_size
-        self.tournamet_size = tournamet_size
-        self.generations = generations
-        self.mutation_rate = mutation_rate
-        self.nodes = nodes
-        self.containers = containers
-
-    def create_initial_population(self):
-        pass
-
-class DockProblem(Problem):
-
-    def __init__(self,
-                 n_obj,
-                 population_size,
-                 tournament_size,
-                 generations,
-                 mutation_rate,
-                 n_containers,
-                 n_services,
-                 containers_cpu_bounds,
-                 containers_memory_bounds,
-                 nodes_cpu_types,
-                 nodes_memory_types,
-                 nodes_per_type,
-                 **kwargs,
-                 ):
-        self.n_obj = n_obj
-        self.population_size = population_size
-        self.tournament_size = tournament_size
-        self.generations = generations
-        self.mutation_rate = mutation_rate
-        self.n_containers = n_containers
-        self.n_services = n_services
-        self.containers_cpu_bounds = containers_cpu_bounds
-        self.containers_memory_bounds = containers_memory_bounds
-        self.nodes_cpu_types = nodes_cpu_types
-        self.nodes_memory_types = nodes_memory_types
-        self.nodes_per_type = nodes_per_type
-        super().__init__(n_var=1, n_obj=self.n_obj, n_constr=0, elementwise_evaluation=True)
-
-    def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = x[0].get_fitness()
-
-class DockSampling(Sampling):
-
-    def _do(self, problem, n_samples, **kwargs):
-        X = generate_initial_population(
-                                        problem.population_size,
-                                        problem.n_containers,
-                                        problem.n_services,
-                                        problem.containers_cpu_bounds,
-                                        problem.containers_memory_bounds,
-                                        problem.nodes_cpu_types,
-                                        problem.nodes_memory_types,
-                                        problem.nodes_per_type,
-                                       )
-        X = np.reshape(X, (problem.population_size,1))
-        return X
-
-class DockCrossover(Crossover):
-
-    def __init__(self):
-        super().__init__(2,1)
-
-    def _do(self, problem, X, **kwargs):
-        _, n_matings, n_var = X.shape
-        Y = np.full((1, n_matings, n_var), None, dtype=np.object)
-        for k in range(n_matings):
-            a, b = X[0, k, 0], X[1, k, 0]
-            Y[0, k, 0] = a.crossover(b)
-        return Y
-
-class DockMutation(Mutation):
-
-    def __init__(self):
-        super().__init__()
-
-    def _do(self, problem, X, **kwargs):
-        for i in range(len(X)):
-            if np.random.rand() < problem.mutation_rate:
-                X[i, 0].mutate()
-        return X
-
-def feasibility_tournament(pop, P, algorithm, **kwargs):
-
-    # P is a matrix with chosen indices from pop
-    n_tournaments, n_competitors = P.shape
-
-    S = np.zeros(n_tournaments, dtype=np.int)
-
-    for i in range(n_tournaments):
-
-        tournament = P[i]
-
-        scores = np.zeros(n_competitors, dtype=np.int)
-        for j in range(n_competitors):
-            infeasibility_score = pop[tournament[j]].X[0].get_infeasibility()
-            scores[j] = infeasibility_score
-
-        winner_index = scores.argsort()[0]
-
-        S[i] = tournament[winner_index]
-
-    return S
-
-
-def func_is_duplicate(pop, *other, **kwargs):
-    if len(other) == 0:
-        return np.full(len(pop), False)
-
-    # value to finally return
-    is_duplicate = np.full(len(pop), False)
-
-    return is_duplicate
-
-def solve(kwargs):
-
-    n_obj = 5
-
-    ref_dirs = get_reference_directions("das-dennis", n_obj, n_partitions=6)
-
-    selection = get_selection('tournament',
-                              func_comp=feasibility_tournament,
-                              pressure=kwargs['tournament_size'])
-
-    algorithm = NSGA3(pop_size=kwargs['population_size'],
-                      sampling=DockSampling(),
-                      selection=selection,
-                      crossover=DockCrossover(),
-                      mutation=DockMutation(),
-                      ref_dirs=ref_dirs,
-                      eliminate_duplicates=func_is_duplicate)
-
-    res = minimize(DockProblem(**kwargs),
-                   algorithm,
-                   seed=1,
-                   verbose=True,
-                   save_history=True,
-                   termination=('n_gen', kwargs['generations']))
-
-    return res.X.flatten(), res.history
-
-
-def visualize_history(history, name):
-
-    n_gen, pop_size, n_obj = history.shape
-
-    fig, axs = plt.subplots(n_obj, 1)
-    axs[-1].set_xlabel("Generations")
-
-    for i in range(n_obj):
-        x = np.arange(1,n_gen+1)
-        axs[i].set_xlim(0, n_gen+1)
-        axs[i].set_ylabel('obj_' + str(i+1))
-        #for j in range(n_gen):
-        #    x = np.ones(pop_size) * (j + 1)
-        #    axs[i].plot(x, history[j,:,i], 'r.')
-        max_obj = np.max(history[:,:,i], axis=1)
-        min_obj = np.min(history[:,:,i], axis=1)
-        axs[i].plot(x, max_obj, 'r-')
-        axs[i].plot(x, min_obj, 'r-')
-        axs[i].fill_between(x, max_obj, min_obj, where=max_obj>min_obj, facecolor='red', alpha=0.1)
-
-        average = np.sum(history[:,:,i], axis=1) / pop_size
-        x = np.arange(1, n_gen+1)
-        axs[i].plot(x, average, 'b--')
-
-    fig.set_size_inches(10,10)
-    plt.savefig(name)
-    plt.show()
-    plt.close()
-
-
-kwargs = {  'n_obj':5,
-       'population_size':200,
-       'tournament_size':7,
-       'generations':10,
-       'mutation_rate':0.3,
-       'n_containers':300,
-       'n_services':100,
-       'containers_cpu_bounds':(0,1),
-       'containers_memory_bounds':(25,1000),
-       'nodes_cpu_types':[1,2,4,8,16],
-       'nodes_memory_types':[2048,4096,8192,16384,32768],
-       'nodes_per_type':20,
- }
-
-r, h = solve(kwargs)
-visualize_history(h, "plot.png")
