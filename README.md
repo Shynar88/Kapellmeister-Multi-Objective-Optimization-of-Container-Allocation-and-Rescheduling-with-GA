@@ -4,13 +4,9 @@ Multi-Objective Optimization tool for Container Allocation and Rescheduling with
 ## Report
 
 **Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm**
-[1] A. Velikanov, S. Torekhan, K. Baryktabasova, T. Mathews,  [Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm](GenGenPaper.pdf)
-TODO: add working paper link
+[1] A. Velikanov, S. Torekhan, K. Baryktabasova, T. Mathews,  [Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm](https://github.com/Shynar88/Kapellmeister-Multi-Objective-Optimization-of-Container-Allocation-and-Rescheduling-with-GA/blob/master/Kapellmeister%20–%20Multi-Objective%20Optimization%20of%20Container%20Allocation%20and%20Rescheduling%20with%20Genetic%20Algorithm.pdf)
+
 ## Developer guide
-[IMPORTANT]
-From Professor's document:
-"Make sure your submission is self-contained. If it has any external dependency, either include it in the repository or provide a detailed instruction on how to install them. We expect your project to work out of the box with reasonable ease."<br/>
- "The repository should contain sufficient information so that we can execute your project." !!!!!!!!!!
 
 ## Installation
 
