@@ -1,11 +1,11 @@
 # Kapellmeister
-Multi-Objective Optimization of Container Allocation and Rescheduling with GA
+Multi-Objective Optimization tool for Container Allocation and Rescheduling with Genetic Algorithm
 
 ## Report
 
 **Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm**
 [1] A. Velikanov, S. Torekhan, K. Baryktabasova, T. Mathews,  [Kapellmeister -- Multi-Objective Optimization of Container Allocation and Rescheduling with Genetic Algorithm](GenGenPaper.pdf)
-
+TODO: add working paper link
 ## Developer guide
 [IMPORTANT]
 From Professor's document:
